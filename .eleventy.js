@@ -778,6 +778,7 @@ module.exports = function(eleventyConfig) {
   userEleventySetup(eleventyConfig);
 
   return {
+    pathPrefix: "obsidian-vault",
     dir: {
       input: "src/site",
       output: "dist",
