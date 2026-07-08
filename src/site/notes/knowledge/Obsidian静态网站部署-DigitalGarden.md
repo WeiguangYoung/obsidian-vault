@@ -23,15 +23,16 @@
 
 ## 1. Digital Garden 简介
 
-[Digital Garden](https://dg-docs.ole.dev/) 是一个 Obsidian 插件，与 [Quartz](https://quartz.jzhao.xyz/) 类似，但最大的区别是：
+[Digital Garden](https://dg-docs.ole.dev/) 是一款 Obsidian 插件，让你在 Obsidian 内就能将笔记一键发布为静态网站。
 
-| 特性 | Digital Garden | Quartz |
-|------|---------------|--------|
-| 操作方式 | **Obsidian 插件内操作** | 命令行操作 |
-| 构建引擎 | 11ty (Eleventy) | Hugo |
-| 笔记同步 | 插件内一键发布/更新 | git push 自动构建 |
-| 需要本地终端 | ❌ 纯 Obsidian 内完成 | ✅ 需要终端操作 |
-| 单篇/批量发布 | ✅ 支持单篇选择性发布 | 全量构建 |
+**核心特点**：
+| 特性 | 说明 |
+|------|------|
+| 操作方式 | **Obsidian 插件内操作**，点 🌱 即发 |
+| 构建引擎 | 11ty (Eleventy) |
+| 笔记同步 | 插件内一键发布/更新/删除 |
+| 需要本地终端 | ❌ 纯 Obsidian 内完成 |
+| 发布策略 | 支持单篇选择性发布 |
 
 **适合人群**：不想碰命令行、希望像发博客一样在 Obsidian 里点按钮就发布的用户。
 
