@@ -6,7 +6,7 @@
 # Obsidian 静态网站部署 — Digital Garden
 
 > 使用 Digital Garden 插件将 Obsidian 笔记发布为数字花园
-> 基于 11ty (Eleventy)，零配置，Obsidian 插件直出
+> 基于 11ty (Eleventy)，零配置，GitHub Pages 自动部署
 
 ---
 
@@ -15,10 +15,9 @@
 1. [Digital Garden 简介](#1-digital-garden-简介)
 2. [插件安装与配置](#2-插件安装与配置)
 3. [GitHub 仓库与 Actions 自动构建](#3-github-仓库与-actions-自动构建)
-4. [Cloudflare Pages 部署](#4-cloudflare-pages-部署)
-5. [Cloudflare Access 登录认证](#5-cloudflare-access-登录认证)
-6. [进阶配置](#6-进阶配置)
-7. [注意事项](#7-注意事项)
+4. [GitHub Pages 部署](#4-github-pages-部署)
+5. [进阶配置](#5-进阶配置)
+6. [注意事项](#6-注意事项)
 
 ---
 
@@ -105,15 +104,24 @@ Digital Garden 插件推送到 GitHub 后的仓库结构：
 
 ### 3.2 GitHub Actions 工作流
 
-在仓库创建 `.github/workflows/deploy.yml`：
+仓库创建时会自带 Digital Garden 模板的 Actions 配置。如果用的是非 Fork 方式创建的仓库，在 `.github/workflows/` 下新建 `deploy.yml`：
 
 ```yaml
-name: Deploy Digital Garden to Cloudflare Pages
+name: Deploy Digital Garden to GitHub Pages
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -125,172 +133,156 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build site
         run: npx @11ty/eleventy
+        env:
+          PAGES_REPO_NWO: ${{ github.repository }}
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-```
 
-> 💡 Digital Garden 的 11ty 构建输出目录默认为 `_site`，与 Cloudflare Pages 默认配置一致。
-> 如果直接使用 Cloudflare Pages 连接仓库，Cloudflare 会自动检测并可以使用默认设置，无需此 Actions 文件。
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+```
 
 ---
 
-## 4. Cloudflare Pages 部署
+## 4. GitHub Pages 部署
 
-### 4.1 创建 Pages 项目
+### 4.1 配置 Pages 部署源
 
-1. 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. 进入 **Workers & Pages → Pages**
-3. 点击 **Create a project → Connect to Git**
-4. 授权 GitHub 并选择你的 Digital Garden 仓库
+1. 打开 GitHub 仓库 → **Settings → Pages**
+2. 在 **Source** 中选择 **GitHub Actions**（而非默认的 Deploy from a branch）
+3. 确认 `.github/workflows/deploy.yml` 已配置完成（见 3.2）
 
-### 4.2 构建配置
+### 4.2 pathPrefix 配置（项目站点关键！）
 
-| 配置项 | 值 |
-|--------|-----|
-| Framework preset | **Eleventy**（自动检测）或 None |
-| Build command | `npx @11ty/eleventy` |
-| Build output directory | `_site` |
-| Node.js version | 20+ |
+> ⚠️ 如果你的站点部署在 `https://<user>.github.io/<repo>/` 这类**子路径**下，
+> 必须给 11ty 设置 `pathPrefix`，否则所有内部链接会缺少仓库名称前缀导致 404。
+
+在仓库根目录 `.eleventy.js` 的 `module.exports` 中增加 `pathPrefix`：
+
+```js
+module.exports = function(eleventyConfig) {
+  // ... 原有配置 ...
+
+  return {
+    pathPrefix: "/你的仓库名/",   // ← 加上这一行
+    dir: {
+      input: "src/site",
+      output: "dist",
+      includes: "_includes",
+      layouts: "_layouts"
+    }
+  };
+};
+```
+
+> ✅ **用户根站点**（`https://<user>.github.io/`）无需此配置。
 
 ### 4.3 绑定自定义域名（可选）
 
-1. Pages 项目 → **Custom domains** → **Set up a custom domain**
-2. 输入你的域名（如 `garden.yourdomain.com`）
-3. Cloudflare 自动处理 DNS 和 SSL 证书
+1. 仓库 **Settings → Pages** → **Custom domain**
+2. 输入你的域名（如 `notes.yourdomain.com`）
+3. 在域名 DNS 管理中添加 CNAME 记录指向 `<user>.github.io`
+4. 勾选 **Enforce HTTPS**（GitHub 会自动签发 SSL 证书）
 
 ### 4.4 发布流程一览
 
 ```
 Obsidian 中写笔记
     ↓ 点击 🌱 发布
-GitHub 仓库（保存笔记）
+GitHub 仓库（保存笔记到 src/site/notes/）
     ↓ 自动触发
-Cloudflare Pages（构建 + 部署）
+GitHub Actions（npm ci → npx @11ty/eleventy 构建）
+    ↓
+GitHub Pages（自动部署）
     ↓
 🌐 公网访问
 ```
 
----
+### 4.5 使用效果检查
 
-## 5. Cloudflare Access 登录认证
-
-> 网关级认证，**零代码修改**，未通过验证的请求在到达网站前就被拦截。
-
-### 5.1 前置准备
-
-1. Cloudflare 账号（免费即可）
-2. 站点已部署到 Cloudflare Pages
-3. 已绑定自定义域名（推荐）
-
-### 5.2 接入 Cloudflare Zero Trust
-
-1. 登录 [Cloudflare Zero Trust Dashboard](https://one.dash.cloudflare.com/)
-2. 选择 **Free 计划**（50 用户/月免费额度），填写团队名称
-3. 左侧菜单 **Access → Applications → Add an application**
-4. 选择 **Self-hosted** 类型，点击 Next
-
-### 5.3 配置应用与认证策略
-
-| 配置项 | 推荐值 | 说明 |
-|--------|--------|------|
-| Application name | My Digital Garden | 后台标识，可自定义 |
-| Session Duration | 24 hours | 认证有效期 |
-| Application domain | garden.yourdomain.com | 站点域名（须与 Pages 绑定一致） |
-
-**Policy 配置（至少一条 Allow 策略）：**
-
-- **个人使用**：`Action = Allow`，`Include = Emails → 你的邮箱`
-- **团队共享**：`Action = Allow`，`Include = Emails ending in → @company.com`
-
-💡 Free 计划支持 Email OTP、GitHub、Google、Microsoft 等多种免密登录。
-
-### 5.4 绑定 Cloudflare Pages 项目
-
-1. 回到 Cloudflare 主控台 → **Workers & Pages → 你的 Pages 项目**
-2. **Settings → Access** 标签页
-3. 点击 **Add Access policy**，选择刚创建的 Application
-4. 保存后自动为该 Pages 项目启用边缘认证
-
-### 5.5 验证与测试
-
-1. 浏览器无痕模式访问站点域名
-2. ✅ 应看到 Cloudflare 认证页面（而非笔记内容）
-3. 输入授权邮箱 → 收到验证码 → 完成验证
-4. ✅ 24h 内无需重新登录
-5. ✅ **安全检查**：未登录状态下直接访问页面源码 → 返回的是认证页 HTML
+部署完成后访问 `https://<user>.github.io/<repo>/`：
+- ✅ 首页正常显示
+- ✅ 笔记本页链接跳转正确
+- ✅ 搜索、图谱功能正常
+- ❌ 点击链接跳转 404 → 检查 pathPrefix 是否配置正确
 
 ---
 
-## 6. 进阶配置
+## 5. 进阶配置
 
-### 6.1 自定义主题
+### 5.1 前端的暗黑/亮色主题切换
 
-Digital Garden 支持主题切换，在 Obsidian 插件设置中可选：
-- **Default**：简洁白色主题
-- **Dark**：深色模式
-- **Custom CSS**：在仓库 `src/site/css/` 下自定义样式
+Digital Garden 默认使用暗黑主题。如需切换为亮色主题，编辑仓库中的 `src/site/styles/custom-style.scss`：
 
-### 6.2 日记与反向链接
+```scss
+body {
+    --background-primary: #ffffff;
+    --background-secondary: #f5f5f5;
+    --text-normal: #2c3e50;
+    --text-accent: #2d7d46;
+    /* 更多变量覆盖 */
+}
+
+h1, h2, h3, h4 {
+    color: #2c3e50;
+}
+
+.theme-dark {
+    display: none;
+}
+```
+
+> 注意：
+> - `custom-style.scss` 的变量会覆盖 `style.scss` 中的默认值
+> - 修改后重新发布任意笔记触发 GitHub Actions 重新构建即可生效
+> - 自定义样式只在已发布的笔记上生效
+
+### 5.2 日记与反向链接
 
 Digital Garden 原生支持：
 - **日记/周记**自动归档
 - **反向链接**页面显示
 - **图谱视图**（通过 d3.js）
 
-### 6.3 自定义登录页外观
-
-**Zero Trust → Access → Applications → 编辑应用 → Appearance**
-
-- 标题、副标题、Logo
-- 背景颜色、按钮样式
-- 多语言支持（含中文）
-
-### 6.4 API/自动化访问
-
-若需通过脚本抓取笔记内容：
-
-1. 在 Access Policy 中添加 **Service Token** 认证
-2. 脚本请求时携带 Header：`CF-Access-Client-Id` + `CF-Access-Client-Secret`
+---
 
 ---
 
-## 7. 注意事项
+## 6. 注意事项
 
-### 认证相关
+### 路径配置
 
-1. ⚠️ **不要混用客户端鉴权**：Cloudflare Access 是网络层拦截，勿在 Digital Garden 代码中加 JS 登录检查
-2. ⚠️ **缓存问题**：开启认证后仍能直接访问？检查 Pages 缓存设置，或在 **Rules → Cache Rules** 中禁用缓存
-3. 📊 **免费额度上限**：Free 计划限制 **50 个独立用户/月**
-4. 🔒 **敏感数据兜底**：极度敏感的笔记建议用 `obsidian-encrypt` 插件端到端加密
+1. ⚠️ **子路径部署必须配置 pathPrefix**：`https://<user>.github.io/<repo>/` 类型的站点务必在 `.eleventy.js` 配置 `pathPrefix: "/<repo>/"`，否则所有 wiki 链接解析为 `/notes/xxx/` 而非 `/<repo>/notes/xxx/`
+2. ⚠️ **自定义域名**后 pathPrefix 应去掉或设置为 `"/"`，因为域名绑定的站点访问路径无仓库前缀
+
+### 构建相关
+
+3. ⚠️ **首次部署后**如果页面显示 404，检查 GitHub Actions 是否运行成功（仓库 Actions 标签页）
+4. ⚠️ **npm ci 失败**时尝试改为 `npm install`，或检查 `package-lock.json` 是否存在
+5. 📊 **构建时间**：53 篇笔记约需 1-2 分钟完成构建+部署
 
 ### Digital Garden 特有
 
-5. **仓库需公开**：Cloudflare Free 计划只支持公开仓库。如需私有仓库，需 Cloudflare Teams 付费计划或 Vercel Pro
-6. **选择性发布是优势**：只有你点 🌱 发布的笔记才会同步，无需担心整个 Vault 泄露
-7. **不要删除仓库中的 `.github/`**：Digital Garden 插件需要 `src/site/` 目录结构完整才能正常构建
+6. **选择性发布是优势**：只有点 🌱 发布的笔记才会同步，无需担心整个 Vault 泄露
+7. **保留仓库模板结构**：不要删除仓库中的 `src/site/` 等目录，插件需要完整的 11ty 模板结构
 
 ---
 
-## 📊 Quartz vs Digital Garden 决策参考
-
-| 场景 | 推荐 | 原因 |
-|------|------|------|
-| 不想碰命令行 | **Digital Garden** | Obsidian 插件内操作，点按钮发布 |
-| 笔记量大（100+） | **Quartz** | 全量构建更高效 |
-| 选择性发布 | **Digital Garden** | 单篇/批量可控 |
-| 全量发布 | **Quartz** | 软链接一次配置，推就完事 |
-| 追求自由度/自定义 | **Quartz** | 配置更灵活，主题丰富 |
-| 图省心 | **Digital Garden** | 开箱即用 |
-
----
-
-> 📌 最后更新：2026-07-07
