@@ -3,13 +3,13 @@
 ---
 
 
-# Bootstrapping the etcd Cluster
+# 引导 etcd 集群
 
-Kubernetes components are stateless and store cluster state in [etcd](https://github.com/etcd-io/etcd). In this lab you will bootstrap a single node etcd cluster.
+Kubernetes 各组件为无状态设计，集群状态存储在 etcd 中。本实验将引导一个单节点 etcd 集群。
 
-## Prerequisites
+## 准备工作
 
-Copy `etcd` binaries and systemd unit files to the `server` machine:
+将 etcd 二进制文件和 systemd unit 文件拷贝到 server 节点：
 
 ```bash
 scp \
@@ -19,17 +19,15 @@ scp \
   root@server:~/
 ```
 
-The commands in this lab must be run on the `server` machine. Login to the `server` machine using the `ssh` command. Example:
+登录 server 节点：
 
 ```bash
 ssh root@server
 ```
 
-## Bootstrapping an etcd Cluster
+## 引导 etcd 集群
 
-### Install the etcd Binaries
-
-Extract and install the `etcd` server and the `etcdctl` command line utility:
+### 安装 etcd 二进制文件
 
 ```bash
 {
@@ -37,7 +35,7 @@ Extract and install the `etcd` server and the `etcdctl` command line utility:
 }
 ```
 
-### Configure the etcd Server
+### 配置 etcd 服务
 
 ```bash
 {
@@ -48,15 +46,15 @@ Extract and install the `etcd` server and the `etcdctl` command line utility:
 }
 ```
 
-Each etcd member must have a unique name within an etcd cluster. Set the etcd name to match the hostname of the current compute instance:
+每个 etcd 成员必须在集群中有唯一名称。此处使用主机名作为 etcd 名称。
 
-Create the `etcd.service` systemd unit file:
+部署 systemd unit 文件：
 
 ```bash
 mv etcd.service /etc/systemd/system/
 ```
 
-### Start the etcd Server
+### 启动 etcd
 
 ```bash
 {
@@ -66,9 +64,9 @@ mv etcd.service /etc/systemd/system/
 }
 ```
 
-## Verification
+## 验证
 
-List the etcd cluster members:
+列出集群成员：
 
 ```bash
 etcdctl member list
@@ -78,4 +76,4 @@ etcdctl member list
 6702b0a34e2cfd39, started, controller, http://127.0.0.1:2380, http://127.0.0.1:2379, false
 ```
 
-Next: [Bootstrapping the Kubernetes Control Plane](08-bootstrapping-kubernetes-controllers.md)
+下一步：[引导 K8s 控制平面](08-bootstrapping-kubernetes-controllers.md)

@@ -3,17 +3,15 @@
 ---
 
 
-# Configuring kubectl for Remote Access
+# 配置 kubectl 远程访问
 
-In this lab you will generate a kubeconfig file for the `kubectl` command line utility based on the `admin` user credentials.
+本实验基于 `admin` 用户凭据，为 `kubectl` 生成远程访问的 kubeconfig 文件。
 
-> Run the commands in this lab from the `jumpbox` machine.
+> 以下命令在 `jumpbox` 上执行。
 
-## The Admin Kubernetes Configuration File
+## Admin 配置文件
 
-Each kubeconfig requires a Kubernetes API Server to connect to.
-
-You should be able to ping `server.kubernetes.local` based on the `/etc/hosts` DNS entry from a previous lab.
+首先确认能访问 API Server（依赖之前的 `/etc/hosts` 解析）：
 
 ```bash
 curl --cacert ca.crt \
@@ -25,16 +23,12 @@ curl --cacert ca.crt \
   "major": "1",
   "minor": "32",
   "gitVersion": "v1.32.3",
-  "gitCommit": "32cc146f75aad04beaaa245a7157eb35063a9f99",
-  "gitTreeState": "clean",
-  "buildDate": "2025-03-11T19:52:21Z",
-  "goVersion": "go1.23.6",
-  "compiler": "gc",
+  ...
   "platform": "linux/arm64"
 }
 ```
 
-Generate a kubeconfig file suitable for authenticating as the `admin` user:
+生成 admin 用户的 kubeconfig：
 
 ```bash
 {
@@ -54,12 +48,12 @@ Generate a kubeconfig file suitable for authenticating as the `admin` user:
   kubectl config use-context kubernetes-the-hard-way
 }
 ```
-The results of running the command above should create a kubeconfig file in the default location `~/.kube/config` used by the  `kubectl` commandline tool. This also means you can run the `kubectl` command without specifying a config.
 
+配置文件将写入默认路径 `~/.kube/config`，此后 `kubectl` 不再需要指定 `--kubeconfig`。
 
-## Verification
+## 验证
 
-Check the version of the remote Kubernetes cluster:
+查看远程集群版本：
 
 ```bash
 kubectl version
@@ -71,7 +65,7 @@ Kustomize Version: v5.5.0
 Server Version: v1.32.3
 ```
 
-List the nodes in the remote Kubernetes cluster:
+列出集群节点：
 
 ```bash
 kubectl get nodes
@@ -83,4 +77,4 @@ node-0   Ready    <none>   10m   v1.32.3
 node-1   Ready    <none>   10m   v1.32.3
 ```
 
-Next: [Provisioning Pod Network Routes](11-pod-network-routes.md)
+下一步：[配置 Pod 网络路由](11-pod-network-routes.md)

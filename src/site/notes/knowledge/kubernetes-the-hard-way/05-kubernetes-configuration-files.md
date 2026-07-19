@@ -3,21 +3,19 @@
 ---
 
 
-# Generating Kubernetes Configuration Files for Authentication
+# 生成 K8s 认证配置文件
 
-In this lab you will generate [Kubernetes client configuration files](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/), typically called kubeconfigs, which configure Kubernetes clients to connect and authenticate to Kubernetes API Servers.
+本实验生成 Kubernetes 客户端配置文件（kubeconfig），用于配置 K8s 客户端与 API Server 的连接与认证。
 
-## Client Authentication Configs
+## 客户端认证配置
 
-In this section you will generate kubeconfig files for the `kubelet` and the `admin` user.
+### kubelet 配置文件
 
-### The kubelet Kubernetes Configuration File
+生成 kubelet 的 kubeconfig 时，必须使用与节点名匹配的客户端证书，确保 kubelet 能被 K8s 的 Node Authorizer 正确授权。
 
-When generating kubeconfig files for Kubelets the client certificate matching the Kubelet's node name must be used. This will ensure Kubelets are properly authorized by the Kubernetes [Node Authorizer](https://kubernetes.io/docs/reference/access-authn-authz/node/).
+> 以下命令需在之前生成 SSL 证书的同一目录下执行。
 
-> The following commands must be run in the same directory used to generate the SSL certificates during the [Generating TLS Certificates](04-certificate-authority.md) lab.
-
-Generate a kubeconfig file for the `node-0` and `node-1` worker nodes:
+为 `node-0` 和 `node-1` 生成 kubeconfig：
 
 ```bash
 for host in node-0 node-1; do
@@ -43,16 +41,12 @@ for host in node-0 node-1; do
 done
 ```
 
-Results:
-
 ```text
 node-0.kubeconfig
 node-1.kubeconfig
 ```
 
-### The kube-proxy Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-proxy` service:
+### kube-proxy 配置文件
 
 ```bash
 {
@@ -78,15 +72,11 @@ Generate a kubeconfig file for the `kube-proxy` service:
 }
 ```
 
-Results:
-
 ```text
 kube-proxy.kubeconfig
 ```
 
-### The kube-controller-manager Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-controller-manager` service:
+### kube-controller-manager 配置文件
 
 ```bash
 {
@@ -112,16 +102,11 @@ Generate a kubeconfig file for the `kube-controller-manager` service:
 }
 ```
 
-Results:
-
 ```text
 kube-controller-manager.kubeconfig
 ```
 
-
-### The kube-scheduler Kubernetes Configuration File
-
-Generate a kubeconfig file for the `kube-scheduler` service:
+### kube-scheduler 配置文件
 
 ```bash
 {
@@ -147,15 +132,11 @@ Generate a kubeconfig file for the `kube-scheduler` service:
 }
 ```
 
-Results:
-
 ```text
 kube-scheduler.kubeconfig
 ```
 
-### The admin Kubernetes Configuration File
-
-Generate a kubeconfig file for the `admin` user:
+### admin 配置文件
 
 ```bash
 {
@@ -181,15 +162,13 @@ Generate a kubeconfig file for the `admin` user:
 }
 ```
 
-Results:
-
 ```text
 admin.kubeconfig
 ```
 
-## Distribute the Kubernetes Configuration Files
+## 分发配置文件
 
-Copy the `kubelet` and `kube-proxy` kubeconfig files to the `node-0` and `node-1` machines:
+将 kubelet 和 kube-proxy 的 kubeconfig 拷贝到 Worker 节点：
 
 ```bash
 for host in node-0 node-1; do
@@ -203,7 +182,7 @@ for host in node-0 node-1; do
 done
 ```
 
-Copy the `kube-controller-manager` and `kube-scheduler` kubeconfig files to the `server` machine:
+将控制面组件的 kubeconfig 拷贝到 server：
 
 ```bash
 scp admin.kubeconfig \
@@ -212,4 +191,4 @@ scp admin.kubeconfig \
   root@server:~/
 ```
 
-Next: [Generating the Data Encryption Config and Key](06-data-encryption-keys.md)
+下一步：[生成数据加密配置与密钥](06-data-encryption-keys.md)

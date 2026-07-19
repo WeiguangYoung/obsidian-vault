@@ -3,15 +3,15 @@
 ---
 
 
-# Bootstrapping the Kubernetes Worker Nodes
+# 引导 Worker 节点
 
-In this lab you will bootstrap two Kubernetes worker nodes. The following components will be installed: [runc](https://github.com/opencontainers/runc), [container networking plugins](https://github.com/containernetworking/cni), [containerd](https://github.com/containerd/containerd), [kubelet](https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet), and [kube-proxy](https://kubernetes.io/docs/concepts/cluster-administration/proxies).
+本实验引导两个 K8s Worker 节点，安装以下组件：runc、CNI 网络插件、containerd、kubelet、kube-proxy。
 
-## Prerequisites
+## 准备工作
 
-The commands in this section must be run from the `jumpbox`.
+以下命令在 `jumpbox` 上执行。
 
-Copy the Kubernetes binaries and systemd unit files to each worker instance:
+将配置文件和二进制文件分发到各 Worker：
 
 ```bash
 for HOST in node-0 node-1; do
@@ -50,15 +50,15 @@ for HOST in node-0 node-1; do
 done
 ```
 
-The commands in the next section must be run on each worker instance: `node-0`, `node-1`. Login to the worker instance using the `ssh` command. Example:
+登录各 Worker 节点：
 
 ```bash
 ssh root@node-0
 ```
 
-## Provisioning a Kubernetes Worker Node
+## 部署 Worker 节点
 
-Install the OS dependencies:
+安装系统依赖：
 
 ```bash
 {
@@ -67,27 +67,25 @@ Install the OS dependencies:
 }
 ```
 
-> The socat binary enables support for the `kubectl port-forward` command.
+> `socat` 为 `kubectl port-forward` 提供支持。
 
-Disable Swap
+禁用 Swap：
 
-Kubernetes has limited support for the use of swap memory, as it is difficult to provide guarantees and account for pod memory utilization when swap is involved.
-
-Verify if swap is disabled:
+Kubernetes 对 swap 支持有限，因为启用了 swap 难以保证 Pod 内存使用。
 
 ```bash
 swapon --show
 ```
 
-If output is empty then swap is disabled. If swap is enabled run the following command to disable swap immediately:
+如无输出，说明 swap 已禁用。如有输出，立即禁用：
 
 ```bash
 swapoff -a
 ```
 
-> To ensure swap remains off after reboot consult your Linux distro documentation.
+> 为确保重启后 swap 保持关闭，请查阅 Linux 发行版文档。
 
-Create the installation directories:
+创建所需目录：
 
 ```bash
 mkdir -p \
@@ -99,7 +97,7 @@ mkdir -p \
   /var/run/kubernetes
 ```
 
-Install the worker binaries:
+安装 Worker 二进制文件：
 
 ```bash
 {
@@ -110,15 +108,13 @@ Install the worker binaries:
 }
 ```
 
-### Configure CNI Networking
-
-Create the `bridge` network configuration file:
+### 配置 CNI 网络
 
 ```bash
 mv 10-bridge.conf 99-loopback.conf /etc/cni/net.d/
 ```
 
-To ensure network traffic crossing the CNI `bridge` network is processed by `iptables`, load and configure the `br-netfilter` kernel module:
+加载 `br-netfilter` 内核模块，确保 CNI bridge 的流量被 iptables 处理：
 
 ```bash
 {
@@ -137,9 +133,7 @@ To ensure network traffic crossing the CNI `bridge` network is processed by `ipt
 }
 ```
 
-### Configure containerd
-
-Install the `containerd` configuration files:
+### 配置 containerd
 
 ```bash
 {
@@ -149,9 +143,7 @@ Install the `containerd` configuration files:
 }
 ```
 
-### Configure the Kubelet
-
-Create the `kubelet-config.yaml` configuration file:
+### 配置 kubelet
 
 ```bash
 {
@@ -160,7 +152,7 @@ Create the `kubelet-config.yaml` configuration file:
 }
 ```
 
-### Configure the Kubernetes Proxy
+### 配置 kube-proxy
 
 ```bash
 {
@@ -169,7 +161,7 @@ Create the `kubelet-config.yaml` configuration file:
 }
 ```
 
-### Start the Worker Services
+### 启动 Worker 服务
 
 ```bash
 {
@@ -179,7 +171,7 @@ Create the `kubelet-config.yaml` configuration file:
 }
 ```
 
-Check if the kubelet service is running:
+检查 kubelet 状态：
 
 ```bash
 systemctl is-active kubelet
@@ -189,13 +181,11 @@ systemctl is-active kubelet
 active
 ```
 
-Be sure to complete the steps in this section on each worker node, `node-0` and `node-1`, before moving on to the next section.
+> ⚠️ 务必在 `node-0` 和 `node-1` 上都完成以上步骤。
 
-## Verification
+## 验证
 
-Run the following commands from the `jumpbox` machine.
-
-List the registered Kubernetes nodes:
+从 `jumpbox` 查看注册的节点：
 
 ```bash
 ssh root@server \
@@ -209,4 +199,4 @@ node-0   Ready    <none>   1m     v1.32.3
 node-1   Ready    <none>   10s    v1.32.3
 ```
 
-Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)
+下一步：[配置 kubectl 远程访问](10-configuring-kubectl.md)

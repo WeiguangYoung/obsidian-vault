@@ -3,25 +3,25 @@
 ---
 
 
-# Provisioning a CA and Generating TLS Certificates
+# 配置 CA 与生成 TLS 证书
 
-In this lab you will provision a [PKI Infrastructure](https://en.wikipedia.org/wiki/Public_key_infrastructure) using openssl to bootstrap a Certificate Authority, and generate TLS certificates for the following components: kube-apiserver, kube-controller-manager, kube-scheduler, kubelet, and kube-proxy. The commands in this section should be run from the `jumpbox`.
+本实验使用 OpenSSL 搭建 PKI（公钥基础设施），创建证书颁发机构（CA），并为以下组件生成 TLS 证书：kube-apiserver、kube-controller-manager、kube-scheduler、kubelet、kube-proxy。本节命令均在 `jumpbox` 上执行。
 
-## Certificate Authority
+## 证书颁发机构（CA）
 
-In this section you will provision a Certificate Authority that can be used to generate additional TLS certificates for the other Kubernetes components. Setting up CA and generating certificates using `openssl` can be time-consuming, especially when doing it for the first time. To streamline this lab, I've included an openssl configuration file `ca.conf`, which defines all the details needed to generate certificates for each Kubernetes component.
+创建 CA 用于签发其他 K8s 组件的 TLS 证书。为简化流程，项目已提供 `ca.conf` 配置文件，定义了各组件证书的生成细节。
 
-Take a moment to review the `ca.conf` configuration file:
+浏览配置文件：
 
 ```bash
 cat ca.conf
 ```
 
-You don't need to understand everything in the `ca.conf` file to complete this tutorial, but you should consider it a starting point for learning `openssl` and the configuration that goes into managing certificates at a high level.
+不要求完全理解 `ca.conf`，但可以将其作为学习 OpenSSL 证书管理的起点。
 
-Every certificate authority starts with a private key and root certificate. In this section we are going to create a self-signed certificate authority, and while that's all we need for this tutorial, this shouldn't be considered something you would do in a real-world production environment.
+每个 CA 始于一个私钥和根证书。此处我们创建自签名 CA——虽然对学习来说够用，但生产环境不应这样做。
 
-Generate the CA configuration file, certificate, and private key:
+生成 CA 配置、证书和私钥：
 
 ```bash
 {
@@ -33,17 +33,17 @@ Generate the CA configuration file, certificate, and private key:
 }
 ```
 
-Results:
+结果文件：
 
 ```txt
 ca.crt ca.key
 ```
 
-## Create Client and Server Certificates
+## 生成客户端与服务端证书
 
-In this section you will generate client and server certificates for each Kubernetes component and a client certificate for the Kubernetes `admin` user.
+为各 K8s 组件及 `admin` 用户生成证书。
 
-Generate the certificates and private keys:
+生成证书签名请求和签名证书：
 
 ```bash
 certs=(
@@ -72,17 +72,17 @@ for i in ${certs[*]}; do
 done
 ```
 
-The results of running the above command will generate a private key, certificate request, and signed SSL certificate for each of the Kubernetes components. You can list the generated files with the following command:
+查看生成的文件：
 
 ```bash
 ls -1 *.crt *.key *.csr
 ```
 
-## Distribute the Client and Server Certificates
+## 分发证书
 
-In this section you will copy the various certificates to every machine at a path where each Kubernetes component will search for its certificate pair. In a real-world environment these certificates should be treated like a set of sensitive secrets as they are used as credentials by the Kubernetes components to authenticate to each other.
+将证书拷贝到每台机器对应的路径。在生产环境中，这些证书应视为敏感凭据——因为 K8s 组件用它们互相认证。
 
-Copy the appropriate certificates and private keys to the `node-0` and `node-1` machines:
+分发到 Worker 节点（node-0 和 node-1）：
 
 ```bash
 for host in node-0 node-1; do
@@ -98,7 +98,7 @@ for host in node-0 node-1; do
 done
 ```
 
-Copy the appropriate certificates and private keys to the `server` machine:
+分发到控制节点（server）：
 
 ```bash
 scp \
@@ -108,6 +108,6 @@ scp \
   root@server:~/
 ```
 
-> The `kube-proxy`, `kube-controller-manager`, `kube-scheduler`, and `kubelet` client certificates will be used to generate client authentication configuration files in the next lab.
+> `kube-proxy`、`kube-controller-manager`、`kube-scheduler` 和 `kubelet` 的客户端证书将在下一实验中用于生成客户端认证配置文件。
 
-Next: [Generating Kubernetes Configuration Files for Authentication](05-kubernetes-configuration-files.md)
+下一步：[生成 K8s 认证配置文件](05-kubernetes-configuration-files.md)

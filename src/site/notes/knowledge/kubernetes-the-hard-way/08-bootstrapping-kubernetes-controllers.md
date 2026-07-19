@@ -3,13 +3,13 @@
 ---
 
 
-# Bootstrapping the Kubernetes Control Plane
+# 引导 K8s 控制平面
 
-In this lab you will bootstrap the Kubernetes control plane. The following components will be installed on the `server` machine: Kubernetes API Server, Scheduler, and Controller Manager.
+本实验引导 Kubernetes 控制平面，在 `server` 节点上安装以下组件：API Server、Scheduler、Controller Manager。
 
-## Prerequisites
+## 准备工作
 
-Connect to the `jumpbox` and copy Kubernetes binaries and systemd unit files to the `server` machine:
+在 `jumpbox` 上将二进制文件和 systemd unit 文件拷贝到 server：
 
 ```bash
 scp \
@@ -25,23 +25,21 @@ scp \
   root@server:~/
 ```
 
-The commands in this lab must be run on the `server` machine. Login to the `server` machine using the `ssh` command. Example:
+登录 server：
 
 ```bash
 ssh root@server
 ```
 
-## Provision the Kubernetes Control Plane
+## 部署控制平面
 
-Create the Kubernetes configuration directory:
+创建 K8s 配置目录：
 
 ```bash
 mkdir -p /etc/kubernetes/config
 ```
 
-### Install the Kubernetes Controller Binaries
-
-Install the Kubernetes binaries:
+### 安装控制面二进制文件
 
 ```bash
 {
@@ -52,7 +50,7 @@ Install the Kubernetes binaries:
 }
 ```
 
-### Configure the Kubernetes API Server
+### 配置 API Server
 
 ```bash
 {
@@ -66,48 +64,39 @@ Install the Kubernetes binaries:
 }
 ```
 
-Create the `kube-apiserver.service` systemd unit file:
+部署 API Server 的 systemd unit：
 
 ```bash
 mv kube-apiserver.service \
   /etc/systemd/system/kube-apiserver.service
 ```
 
-### Configure the Kubernetes Controller Manager
-
-Move the `kube-controller-manager` kubeconfig into place:
+### 配置 Controller Manager
 
 ```bash
 mv kube-controller-manager.kubeconfig /var/lib/kubernetes/
 ```
 
-Create the `kube-controller-manager.service` systemd unit file:
+部署 systemd unit：
 
 ```bash
 mv kube-controller-manager.service /etc/systemd/system/
 ```
 
-### Configure the Kubernetes Scheduler
-
-Move the `kube-scheduler` kubeconfig into place:
+### 配置 Scheduler
 
 ```bash
 mv kube-scheduler.kubeconfig /var/lib/kubernetes/
-```
-
-Create the `kube-scheduler.yaml` configuration file:
-
-```bash
 mv kube-scheduler.yaml /etc/kubernetes/config/
 ```
 
-Create the `kube-scheduler.service` systemd unit file:
+部署 systemd unit：
 
 ```bash
 mv kube-scheduler.service /etc/systemd/system/
 ```
 
-### Start the Controller Services
+### 启动控制面服务
 
 ```bash
 {
@@ -121,29 +110,22 @@ mv kube-scheduler.service /etc/systemd/system/
 }
 ```
 
-> Allow up to 10 seconds for the Kubernetes API Server to fully initialize.
+> API Server 完全初始化约需 10 秒。
 
-You can check if any of the control plane components are active using the `systemctl` command. For example, to check if the `kube-apiserver` fully initialized, and active, run the following command:
+检查各组件状态：
 
 ```bash
 systemctl is-active kube-apiserver
-```
-
-For a more detailed status check, which includes additional process information and log messages, use the `systemctl status` command:
-
-```bash
 systemctl status kube-apiserver
 ```
 
-If you run into any errors, or want to view the logs for any of the control plane components, use the `journalctl` command. For example, to view the logs for the `kube-apiserver` run the following command:
+查看日志：
 
 ```bash
 journalctl -u kube-apiserver
 ```
 
-### Verification
-
-At this point the Kubernetes control plane components should be up and running. Verify this using the `kubectl` command line tool:
+### 验证
 
 ```bash
 kubectl cluster-info \
@@ -154,30 +136,22 @@ kubectl cluster-info \
 Kubernetes control plane is running at https://127.0.0.1:6443
 ```
 
-## RBAC for Kubelet Authorization
+## Kubelet 鉴权 RBAC
 
-In this section you will configure RBAC permissions to allow the Kubernetes API Server to access the Kubelet API on each worker node. Access to the Kubelet API is required for retrieving metrics, logs, and executing commands in pods.
+配置 RBAC 权限，使 API Server 可以访问各 Worker 节点上的 Kubelet API（用于获取指标、日志和执行命令）。
 
-> This tutorial sets the Kubelet `--authorization-mode` flag to `Webhook`. Webhook mode uses the [SubjectAccessReview](https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access) API to determine authorization.
+> 本教程将 Kubelet 的 `--authorization-mode` 设为 `Webhook`，通过 SubjectAccessReview API 进行鉴权。
 
-The commands in this section will affect the entire cluster and only need to be run on the `server` machine.
-
-```bash
-ssh root@server
-```
-
-Create the `system:kube-apiserver-to-kubelet` [ClusterRole](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) with permissions to access the Kubelet API and perform most common tasks associated with managing pods:
+以下命令在 server 上执行：
 
 ```bash
 kubectl apply -f kube-apiserver-to-kubelet.yaml \
   --kubeconfig admin.kubeconfig
 ```
 
-### Verification
+### 整体验证
 
-At this point the Kubernetes control plane is up and running. Run the following commands from the `jumpbox` machine to verify it's working:
-
-Make a HTTP request for the Kubernetes version info:
+从 `jumpbox` 访问 API Server：
 
 ```bash
 curl --cacert ca.crt \
@@ -189,13 +163,9 @@ curl --cacert ca.crt \
   "major": "1",
   "minor": "32",
   "gitVersion": "v1.32.3",
-  "gitCommit": "32cc146f75aad04beaaa245a7157eb35063a9f99",
-  "gitTreeState": "clean",
-  "buildDate": "2025-03-11T19:52:21Z",
-  "goVersion": "go1.23.6",
-  "compiler": "gc",
+  ...
   "platform": "linux/arm64"
 }
 ```
 
-Next: [Bootstrapping the Kubernetes Worker Nodes](09-bootstrapping-kubernetes-workers.md)
+下一步：[引导 Worker 节点](09-bootstrapping-kubernetes-workers.md)

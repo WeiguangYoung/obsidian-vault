@@ -3,14 +3,14 @@
 ---
 
 
-# Cleaning Up
+# 清理环境
 
-In this lab you will delete the compute resources created during this tutorial.
+本实验清理搭建过程中创建的所有计算资源。
 
-## Compute Instances
+## 清理步骤
 
-Previous versions of this guide made use of GCP resources for various aspects of compute and networking. The current version is agnostic, and all configuration is performed on the `jumpbox`, `server`, or nodes.
+当前版本不再依赖特定云平台，所有配置均在 `jumpbox`、`server` 或 Worker 节点上完成。
 
-Clean up is as simple as deleting all virtual machines you created for this exercise.
+清理只需删除本次练习创建的所有虚拟机即可。
 
-Next: [Start Over](../README.md)
+回到首页：[教程索引](../README.md)

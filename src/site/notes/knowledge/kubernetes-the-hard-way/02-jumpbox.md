@@ -3,23 +3,23 @@
 ---
 
 
-# Set Up The Jumpbox
+# 配置跳板机
 
-In this lab you will set up one of the four machines to be a `jumpbox`. This machine will be used to run commands throughout this tutorial. While a dedicated machine is being used to ensure consistency, these commands can also be run from just about any machine including your personal workstation running macOS or Linux.
+在本实验中，你将把四台机器中的一台配置为 `jumpbox`（跳板机）。后续所有命令都将在这台机器上执行。虽然这里使用专用机器来保证一致性，但这些命令也可以在 macOS 或 Linux 工作站上运行。
 
-Think of the `jumpbox` as the administration machine that you will use as a home base when setting up your Kubernetes cluster from the ground up. Before we get started we need to install a few command line utilities and clone the Kubernetes The Hard Way git repository, which contains some additional configuration files that will be used to configure various Kubernetes components throughout this tutorial.
+可以把 `jumpbox` 理解为你的管理主机，从头搭建 K8s 集群时的大本营。开始之前，需要安装一些命令行工具并克隆 Kubernetes The Hard Way 的 Git 仓库（包含后续配置所需的模板文件）。
 
-Log in to the `jumpbox`:
+登录 `jumpbox`：
 
 ```bash
 ssh root@jumpbox
 ```
 
-All commands will be run as the `root` user. This is being done for the sake of convenience, and will help reduce the number of commands required to set everything up.
+所有命令均以 `root` 用户执行，简化操作流程。
 
-### Install Command Line Utilities
+### 安装命令行工具
 
-Now that you are logged into the `jumpbox` machine as the `root` user, you will install the command line utilities that will be used to preform various tasks throughout the tutorial.
+登录后安装本教程所需的命令行工具：
 
 ```bash
 {
@@ -28,22 +28,22 @@ Now that you are logged into the `jumpbox` machine as the `root` user, you will 
 }
 ```
 
-### Sync GitHub Repository
+### 同步 Git 仓库
 
-Now it's time to download a copy of this tutorial which contains the configuration files and templates that will be used build your Kubernetes cluster from the ground up. Clone the Kubernetes The Hard Way git repository using the `git` command:
+克隆本教程的仓库，其中包含从头搭建 K8s 集群所需的配置文件与模板：
 
 ```bash
 git clone --depth 1 \
   https://github.com/kelseyhightower/kubernetes-the-hard-way.git
 ```
 
-Change into the `kubernetes-the-hard-way` directory:
+进入工作目录：
 
 ```bash
 cd kubernetes-the-hard-way
 ```
 
-This will be the working directory for the rest of the tutorial. If you ever get lost run the `pwd` command to verify you are in the right directory when running commands on the `jumpbox`:
+这个目录将作为后续操作的工作目录。如果迷失了路径，用 `pwd` 确认当前位置：
 
 ```bash
 pwd
@@ -53,17 +53,17 @@ pwd
 /root/kubernetes-the-hard-way
 ```
 
-### Download Binaries
+### 下载二进制文件
 
-In this section you will download the binaries for the various Kubernetes components. The binaries will be stored in the `downloads` directory on the `jumpbox`, which will reduce the amount of internet bandwidth required to complete this tutorial as we avoid downloading the binaries multiple times for each machine in our Kubernetes cluster.
+接下来下载各 K8s 组件的二进制文件，保存在 `downloads` 目录中。这样可以避免为每台节点反复下载，节省带宽。
 
-The binaries that will be downloaded are listed in either the `downloads-amd64.txt` or `downloads-arm64.txt` file depending on your hardware architecture, which you can review using the `cat` command:
+先查看需下载的二进制列表（根据架构自动选择）：
 
 ```bash
 cat downloads-$(dpkg --print-architecture).txt
 ```
 
-Download the binaries into a directory called `downloads` using the `wget` command:
+用 `wget` 批量下载：
 
 ```bash
 wget -q --show-progress \
@@ -73,13 +73,13 @@ wget -q --show-progress \
   -i downloads-$(dpkg --print-architecture).txt
 ```
 
-Depending on your internet connection speed it may take a while to download over `500` megabytes of binaries, and once the download is complete, you can list them using the `ls` command:
+下载总量约 **500MB**，视网速可能需要一些时间。完成后可列出文件：
 
 ```bash
 ls -oh downloads
 ```
 
-Extract the component binaries from the release archives and organize them under the `downloads` directory.
+解压并整理各组件到对应目录：
 
 ```bash
 {
@@ -105,11 +105,13 @@ Extract the component binaries from the release archives and organize them under
 }
 ```
 
+清理压缩包：
+
 ```bash
 rm -rf downloads/*gz
 ```
 
-Make the binaries executable.
+赋予可执行权限：
 
 ```bash
 {
@@ -117,11 +119,11 @@ Make the binaries executable.
 }
 ```
 
-### Install kubectl
+### 安装 kubectl
 
-In this section you will install the `kubectl`, the official Kubernetes client command line tool, on the `jumpbox` machine. `kubectl` will be used to interact with the Kubernetes control plane once your cluster is provisioned later in this tutorial.
+安装 `kubectl`——Kubernetes 官方命令行客户端工具。后续将通过它与 K8s 控制平面交互。
 
-Use the `chmod` command to make the `kubectl` binary executable and move it to the `/usr/local/bin/` directory:
+将二进制文件拷贝到系统路径：
 
 ```bash
 {
@@ -129,7 +131,7 @@ Use the `chmod` command to make the `kubectl` binary executable and move it to t
 }
 ```
 
-At this point `kubectl` is installed and can be verified by running the `kubectl` command:
+验证安装：
 
 ```bash
 kubectl version --client
@@ -140,6 +142,6 @@ Client Version: v1.32.3
 Kustomize Version: v5.5.0
 ```
 
-At this point the `jumpbox` has been set up with all the command line tools and utilities necessary to complete the labs in this tutorial.
+至此，`jumpbox` 已配置完成，所有工具就绪。
 
-Next: [Provisioning Compute Resources](03-compute-resources.md)
+下一步：[准备计算资源](03-compute-resources.md)

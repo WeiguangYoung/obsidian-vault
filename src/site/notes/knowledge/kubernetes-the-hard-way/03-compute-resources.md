@@ -3,21 +3,21 @@
 ---
 
 
-# Provisioning Compute Resources
+# 准备计算资源
 
-Kubernetes requires a set of machines to host the Kubernetes control plane and the worker nodes where containers are ultimately run. In this lab you will provision the machines required for setting up a Kubernetes cluster.
+Kubernetes 需要一组机器来承载控制平面和运行容器的 Worker 节点。本实验将准备好搭建 K8s 集群所需的机器。
 
-## Machine Database
+## 机器数据库
 
-This tutorial will leverage a text file, which will serve as a machine database, to store the various machine attributes that will be used when setting up the Kubernetes control plane and worker nodes. The following schema represents entries in the machine database, one entry per line:
+本教程使用一个文本文件作为机器数据库，记录搭建集群所需的各机器属性。格式如下（每行一台）：
 
 ```text
 IPV4_ADDRESS FQDN HOSTNAME POD_SUBNET
 ```
 
-Each of the columns corresponds to a machine IP address `IPV4_ADDRESS`, fully qualified domain name `FQDN`, host name `HOSTNAME`, and the IP subnet `POD_SUBNET`. Kubernetes assigns one IP address per `pod` and the `POD_SUBNET` represents the unique IP address range assigned to each machine in the cluster for doing so.
+各列含义：`IPV4_ADDRESS`（IP地址）、`FQDN`（完整域名）、`HOSTNAME`（主机名）、`POD_SUBNET`（Pod 子网）。Kubernetes 为每个 Pod 分配一个 IP，`POD_SUBNET` 即为每台机器分配的独立 IP 范围。
 
-Here is an example machine database similar to the one used when creating this tutorial. Notice the IP addresses have been masked out. Your machines can be assigned any IP address as long as each machine is reachable from each other and the `jumpbox`.
+下面是示例数据库（IP 已脱敏）：
 
 ```bash
 cat machines.txt
@@ -29,23 +29,25 @@ XXX.XXX.XXX.XXX node-0.kubernetes.local node-0 10.200.0.0/24
 XXX.XXX.XXX.XXX node-1.kubernetes.local node-1 10.200.1.0/24
 ```
 
-Now it's your turn to create a `machines.txt` file with the details for the three machines you will be using to create your Kubernetes cluster. Use the example machine database from above and add the details for your machines.
+创建你自己的 `machines.txt`，填入三台机器信息即可。
 
-## Configuring SSH Access
+## 配置 SSH 访问
 
-SSH will be used to configure the machines in the cluster. Verify that you have `root` SSH access to each machine listed in your machine database. You may need to enable root SSH access on each node by updating the sshd_config file and restarting the SSH server.
+通过 SSH 配置集群内的机器。确保可以对 `machines.txt` 中每台机器以 `root` 身份 SSH 登录。你可能需要更新 sshd 配置来启用 root SSH。
 
-### Enable root SSH Access
+### 启用 root SSH 访问
 
-If `root` SSH access is enabled for each of your machines you can skip this section.
+如果 root SSH 已启用，可跳过此节。
 
-By default, a new `debian` install disables SSH access for the `root` user. This is done for security reasons as the `root` user has total administrative control of unix-like systems. If a weak password is used on a machine connected to the internet, well, let's just say it's only a matter of time before your machine belongs to someone else. As mentioned earlier, we are going to enable `root` access over SSH in order to streamline the steps in this tutorial. Security is a tradeoff, and in this case, we are optimizing for convenience. Log on to each machine via SSH using your user account, then switch to the `root` user using the `su` command:
+Debian 默认禁止 root SSH 登录，这是出于安全考虑。考虑到本教程需要简化流程，我们将在便利性与安全性之间适当取舍——启用 root SSH。
+
+通过普通用户 SSH 登录每台机器后切换到 root：
 
 ```bash
 su - root
 ```
 
-Edit the `/etc/ssh/sshd_config` SSH daemon configuration file and set the `PermitRootLogin` option to `yes`:
+编辑 `/etc/ssh/sshd_config`，设置 `PermitRootLogin` 为 `yes`：
 
 ```bash
 sed -i \
@@ -53,17 +55,17 @@ sed -i \
   /etc/ssh/sshd_config
 ```
 
-Restart the `sshd` SSH server to pick up the updated configuration file:
+重启 SSHD 使之生效：
 
 ```bash
 systemctl restart sshd
 ```
 
-### Generate and Distribute SSH Keys
+### 生成并分发 SSH 密钥
 
-In this section you will generate and distribute an SSH keypair to the `server`, `node-0`, and `node-1`, machines, which will be used to run commands on those machines throughout this tutorial. Run the following commands from the `jumpbox` machine.
+在 `jumpbox` 上生成 SSH 密钥并分发到 `server`、`node-0`、`node-1` 三台机器。
 
-Generate a new SSH key:
+生成密钥：
 
 ```bash
 ssh-keygen
@@ -78,7 +80,7 @@ Your identification has been saved in /root/.ssh/id_rsa
 Your public key has been saved in /root/.ssh/id_rsa.pub
 ```
 
-Copy the SSH public key to each machine:
+分发公钥到每台机器：
 
 ```bash
 while read IP FQDN HOST SUBNET; do
@@ -86,7 +88,7 @@ while read IP FQDN HOST SUBNET; do
 done < machines.txt
 ```
 
-Once each key is added, verify SSH public key access is working:
+验证免密登录：
 
 ```bash
 while read IP FQDN HOST SUBNET; do
@@ -100,13 +102,11 @@ node-0
 node-1
 ```
 
-## Hostnames
+## 设置主机名
 
-In this section you will assign hostnames to the `server`, `node-0`, and `node-1` machines. The hostname will be used when executing commands from the `jumpbox` to each machine. The hostname also plays a major role within the cluster. Instead of Kubernetes clients using an IP address to issue commands to the Kubernetes API server, those clients will use the `server` hostname instead. Hostnames are also used by each worker machine, `node-0` and `node-1` when registering with a given Kubernetes cluster.
+给 `server`、`node-0`、`node-1` 分配主机名。主机名在集群中至关重要：K8s 客户端通过主机名而非 IP 访问 API Server，Worker 节点也通过主机名注册到集群。
 
-To configure the hostname for each machine, run the following commands on the `jumpbox`.
-
-Set the hostname on each machine listed in the `machines.txt` file:
+在 `jumpbox` 上执行，设置每台机器的主机名：
 
 ```bash
 while read IP FQDN HOST SUBNET; do
@@ -117,7 +117,7 @@ while read IP FQDN HOST SUBNET; do
 done < machines.txt
 ```
 
-Verify the hostname is set on each machine:
+验证：
 
 ```bash
 while read IP FQDN HOST SUBNET; do
@@ -131,18 +131,18 @@ node-0.kubernetes.local
 node-1.kubernetes.local
 ```
 
-## Host Lookup Table
+## 主机名解析表
 
-In this section you will generate a `hosts` file which will be appended to `/etc/hosts` file on the `jumpbox` and to the `/etc/hosts` files on all three cluster members used for this tutorial. This will allow each machine to be reachable using a hostname such as `server`, `node-0`, or `node-1`.
+生成一个 `hosts` 文件，追加到 `jumpbox` 和三台集群节点的 `/etc/hosts` 中，让各机器之间可以通过主机名互通。
 
-Create a new `hosts` file and add a header to identify the machines being added:
+创建 `hosts` 文件：
 
 ```bash
 echo "" > hosts
 echo "# Kubernetes The Hard Way" >> hosts
 ```
 
-Generate a host entry for each machine in the `machines.txt` file and append it to the `hosts` file:
+从 `machines.txt` 生成主机条目：
 
 ```bash
 while read IP FQDN HOST SUBNET; do
@@ -151,7 +151,7 @@ while read IP FQDN HOST SUBNET; do
 done < machines.txt
 ```
 
-Review the host entries in the `hosts` file:
+查看生成的 `hosts` 文件：
 
 ```bash
 cat hosts
@@ -165,17 +165,13 @@ XXX.XXX.XXX.XXX node-0.kubernetes.local node-0
 XXX.XXX.XXX.XXX node-1.kubernetes.local node-1
 ```
 
-## Adding `/etc/hosts` Entries To A Local Machine
-
-In this section you will append the DNS entries from the `hosts` file to the local `/etc/hosts` file on your `jumpbox` machine.
-
-Append the DNS entries from `hosts` to `/etc/hosts`:
+### 添加到 jumpbox 本机
 
 ```bash
 cat hosts >> /etc/hosts
 ```
 
-Verify that the `/etc/hosts` file has been updated:
+验证：
 
 ```bash
 cat /etc/hosts
@@ -196,7 +192,7 @@ XXX.XXX.XXX.XXX node-0.kubernetes.local node-0
 XXX.XXX.XXX.XXX node-1.kubernetes.local node-1
 ```
 
-At this point you should be able to SSH to each machine listed in the `machines.txt` file using a hostname.
+测试主机名 SSH 连接：
 
 ```bash
 for host in server node-0 node-1
@@ -210,11 +206,7 @@ node-0
 node-1
 ```
 
-## Adding `/etc/hosts` Entries To The Remote Machines
-
-In this section you will append the host entries from `hosts` to `/etc/hosts` on each machine listed in the `machines.txt` text file.
-
-Copy the `hosts` file to each machine and append the contents to `/etc/hosts`:
+### 添加到远程机器
 
 ```bash
 while read IP FQDN HOST SUBNET; do
@@ -224,6 +216,6 @@ while read IP FQDN HOST SUBNET; do
 done < machines.txt
 ```
 
-At this point, hostnames can be used when connecting to machines from your `jumpbox` machine, or any of the three machines in the Kubernetes cluster. Instead of using IP addresses you can now connect to machines using a hostname such as `server`, `node-0`, or `node-1`.
+至此，所有机器之间均可通过主机名互通。
 
-Next: [Provisioning a CA and Generating TLS Certificates](04-certificate-authority.md)
+下一步：[配置 CA 与生成 TLS 证书](04-certificate-authority.md)

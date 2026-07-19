@@ -3,19 +3,17 @@
 ---
 
 
-# Provisioning Pod Network Routes
+# 配置 Pod 网络路由
 
-Pods scheduled to a node receive an IP address from the node's Pod CIDR range. At this point pods can not communicate with other pods running on different nodes due to missing network [routes](https://cloud.google.com/compute/docs/vpc/routes).
+Pod 从所在节点的 Pod CIDR 范围获得 IP 地址。目前由于缺少路由，不同节点上的 Pod 之间无法通信。
 
-In this lab you will create a route for each worker node that maps the node's Pod CIDR range to the node's internal IP address.
+本实验为每个 Worker 节点创建路由，将节点的 Pod CIDR 范围映射到节点的内部 IP。
 
-> There are [other ways](https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-achieve-this) to implement the Kubernetes networking model.
+> 实现 K8s 网络模型[还有其他方式](https://kubernetes.io/docs/concepts/cluster-administration/networking/#how-to-achieve-this)。
 
-## The Routing Table
+## 配置路由表
 
-In this section you will gather the information required to create routes in the `kubernetes-the-hard-way` VPC network.
-
-Print the internal IP address and Pod CIDR range for each worker instance:
+提取各节点的 IP 和 Pod CIDR：
 
 ```bash
 {
@@ -26,6 +24,8 @@ Print the internal IP address and Pod CIDR range for each worker instance:
   NODE_1_SUBNET=$(grep node-1 machines.txt | cut -d " " -f 4)
 }
 ```
+
+在各节点上添加路由：
 
 ```bash
 ssh root@server <<EOF
@@ -46,7 +46,9 @@ ssh root@node-1 <<EOF
 EOF
 ```
 
-## Verification 
+## 验证
+
+查看各节点的路由表：
 
 ```bash
 ssh root@server ip route
@@ -56,7 +58,7 @@ ssh root@server ip route
 default via XXX.XXX.XXX.XXX dev ens160 
 10.200.0.0/24 via XXX.XXX.XXX.XXX dev ens160 
 10.200.1.0/24 via XXX.XXX.XXX.XXX dev ens160 
-XXX.XXX.XXX.0/24 dev ens160 proto kernel scope link src XXX.XXX.XXX.XXX 
+...
 ```
 
 ```bash
@@ -66,7 +68,7 @@ ssh root@node-0 ip route
 ```text
 default via XXX.XXX.XXX.XXX dev ens160 
 10.200.1.0/24 via XXX.XXX.XXX.XXX dev ens160 
-XXX.XXX.XXX.0/24 dev ens160 proto kernel scope link src XXX.XXX.XXX.XXX 
+...
 ```
 
 ```bash
@@ -76,8 +78,7 @@ ssh root@node-1 ip route
 ```text
 default via XXX.XXX.XXX.XXX dev ens160 
 10.200.0.0/24 via XXX.XXX.XXX.XXX dev ens160 
-XXX.XXX.XXX.0/24 dev ens160 proto kernel scope link src XXX.XXX.XXX.XXX 
+...
 ```
 
-
-Next: [Smoke Test](12-smoke-test.md)
+下一步：[冒烟测试](12-smoke-test.md)

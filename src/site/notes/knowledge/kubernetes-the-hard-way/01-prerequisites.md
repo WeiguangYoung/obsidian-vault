@@ -3,28 +3,28 @@
 ---
 
 
-# Prerequisites
+# 环境准备
 
-In this lab you will review the machine requirements necessary to follow this tutorial.
+在本实验中，你需要确认完成本教程所需的机器要求。
 
-## Virtual or Physical Machines
+## 虚拟机或物理机
 
-This tutorial requires four (4) virtual or physical ARM64 or AMD64 machines running Debian 12 (bookworm). The following table lists the four machines and their CPU, memory, and storage requirements.
+本教程需要四台运行 Debian 12 的 ARM64 或 AMD64 机器（虚拟或物理均可）。下表列出了四台机器及其 CPU、内存、存储要求：
 
-| Name    | Description            | CPU | RAM   | Storage |
-|---------|------------------------|-----|-------|---------|
-| jumpbox | Administration host    | 1   | 512MB | 10GB    |
-| server  | Kubernetes server      | 1   | 2GB   | 20GB    |
-| node-0  | Kubernetes worker node | 1   | 2GB   | 20GB    |
-| node-1  | Kubernetes worker node | 1   | 2GB   | 20GB    |
+| 名称    | 说明         | CPU | RAM   | 存储  |
+|---------|-------------|-----|-------|------|
+| jumpbox | 管理主机     | 1   | 512MB | 10GB |
+| server  | K8s 控制节点 | 1   | 2GB   | 20GB |
+| node-0  | K8s 工作节点 | 1   | 2GB   | 20GB |
+| node-1  | K8s 工作节点 | 1   | 2GB   | 20GB |
 
-How you provision the machines is up to you, the only requirement is that each machine meet the above system requirements including the machine specs and OS version. Once you have all four machines provisioned, verify the OS requirements by viewing the `/etc/os-release` file:
+如何准备这些机器由你决定，唯一要求是每台机器满足上述系统规格和操作系统版本。所有机器就绪后，查看 `/etc/os-release` 验证系统要求：
 
 ```bash
 cat /etc/os-release
 ```
 
-You should see something similar to the following output:
+输出应类似如下内容：
 
 ```text
 PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
@@ -35,4 +35,4 @@ VERSION_CODENAME=bookworm
 ID=debian
 ```
 
-Next: [setting-up-the-jumpbox](02-jumpbox.md)
+下一步：[配置跳板机](02-jumpbox.md)
