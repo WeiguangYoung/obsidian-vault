@@ -21,14 +21,14 @@
 
 ## 二、容器与编排
 
-| 模块 | 要点 |
-|:----|:------|
-| **Docker** | Dockerfile（多阶段构建）、docker-compose、镜像优化、安全扫描 |
+| 模块             | 要点                                                              |
+| :------------- | :-------------------------------------------------------------- |
+| **Docker**     | Dockerfile（多阶段构建）、docker-compose、镜像优化、安全扫描                      |
 | **Kubernetes** | Pod / Deployment / Service / Ingress / ConfigMap / Secret / PVC |
-| **调度与资源** | 亲和性、污点容忍、HPA / VPA、资源限制与 QoS |
-| **网络与存储** | CNI (Calico/Flannel)、CSI、网络策略 |
-| **Helm** | Chart 编写、values 分层、Chart Museum / Harbor |
-| **多集群** | 集群联邦（KubeFed）、跨集群发布、多地域灾备 |
+| **调度与资源**      | 亲和性、污点容忍、HPA / VPA、资源限制与 QoS                                    |
+| **网络与存储**      | CNI (Calico/Flannel)、CSI、网络策略                                   |
+| **Helm**       | Chart 编写、values 分层、Chart Museum / Harbor                        |
+| **多集群**        | 集群联邦（KubeFed）、跨集群发布、多地域灾备                                       |
 
 ## 三、制品与配置管理
 
