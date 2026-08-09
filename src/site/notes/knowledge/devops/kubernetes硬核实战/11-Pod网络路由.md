@@ -81,4 +81,4 @@ default via XXX.XXX.XXX.XXX dev ens160
 ...
 ```
 
-下一步：[冒烟测试](12-smoke-test.md)
+下一步：[冒烟测试](12-冒烟测试.md)

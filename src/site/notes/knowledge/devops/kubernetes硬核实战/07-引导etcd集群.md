@@ -76,4 +76,4 @@ etcdctl member list
 6702b0a34e2cfd39, started, controller, http://127.0.0.1:2380, http://127.0.0.1:2379, false
 ```
 
-下一步：[引导 K8s 控制平面](08-bootstrapping-kubernetes-controllers.md)
+下一步：[引导 K8s 控制平面](08-引导控制平面.md)

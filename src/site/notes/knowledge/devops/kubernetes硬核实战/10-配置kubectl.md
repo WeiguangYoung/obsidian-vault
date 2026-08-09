@@ -77,4 +77,4 @@ node-0   Ready    <none>   10m   v1.32.3
 node-1   Ready    <none>   10m   v1.32.3
 ```
 
-下一步：[配置 Pod 网络路由](11-pod-network-routes.md)
+下一步：[配置 Pod 网络路由](11-Pod网络路由.md)

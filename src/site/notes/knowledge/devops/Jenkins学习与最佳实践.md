@@ -730,3 +730,14 @@ pipeline {
 ---
 
 > 🦐 虾管家 · 2026-07-06
+
+---
+
+## 🛠️ 实践记录
+
+### 2026-07-24 内网 Push 触发 + 外网 CodeUp + Docker Pipeline
+
+- **内网 Jenkins**：完成 Push 触发流程（Git Push → Webhook → Jenkins 自动构建）
+- **内网 Docker Pipeline**：跑通 Docker Pipeline 插件，实现在容器中运行构建（agent docker）
+- **外网环境**：代码源切换为 **CodeUp（阿里云云效）**，配置后构建成功
+- 当前 Jenkins 运行在 Docker 容器中（`jenkins/jenkins:lts`），端口 `8080`，Pipeline 核心插件齐全

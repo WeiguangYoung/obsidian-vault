@@ -199,4 +199,4 @@ node-0   Ready    <none>   1m     v1.32.3
 node-1   Ready    <none>   10s    v1.32.3
 ```
 
-下一步：[配置 kubectl 远程访问](10-configuring-kubectl.md)
+下一步：[配置 kubectl 远程访问](10-配置kubectl.md)

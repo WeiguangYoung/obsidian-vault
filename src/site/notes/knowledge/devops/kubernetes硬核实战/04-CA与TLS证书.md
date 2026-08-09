@@ -110,4 +110,4 @@ scp \
 
 > `kube-proxy`、`kube-controller-manager`、`kube-scheduler` 和 `kubelet` 的客户端证书将在下一实验中用于生成客户端认证配置文件。
 
-下一步：[生成 K8s 认证配置文件](05-kubernetes-configuration-files.md)
+下一步：[生成 K8s 认证配置文件](05-K8s认证配置.md)
