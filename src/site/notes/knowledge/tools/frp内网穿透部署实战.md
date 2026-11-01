@@ -315,4 +315,4 @@ ssh -p 5223 <user>@<frps 公网 IP>
 
 ## 📎 相关文档
 
-- [[knowledge/devops/practices/04-k3s部署实战\|k3s 部署实战]] —— 内网节点组网（WireGuard）与集群网络
+- k3s 部署实战（practices/04）—— 内网节点组网（WireGuard）与集群网络

@@ -426,5 +426,5 @@ kubectl -n harbor patch sts harbor-trivy --type=strategic -p '{"spec":{"template
 
 ## 相关文档
 
-- [[knowledge/devops/practices/04-k3s部署实战\|k3s 部署实战]]（Harbor 部署细节与集群坑）
-- [[knowledge/devops/roadmap/04-制品与配置管理\|DevOps 知识体系 · 制品与配置管理]]
+- k3s 部署实战（practices/04）—— Harbor 部署细节与集群坑
+- DevOps 知识体系 · 制品与配置管理（roadmap/04）

@@ -5,9 +5,9 @@
 
 # Airflow 部署方案
 
-> 从 [[notes/1-工作/项目经历/04-CCE集群管理\|04-CCE集群管理]] 第十二章独立出来。集群内大量每日定时任务（安全扫描报告聚合、Fuzz 报告汇总、MySQL 备份、ETL 同步等）统一由 **Airflow on K8s** 调度管理。
+> 从「04-CCE 集群管理」第十二章独立出来。集群内大量每日定时任务（安全扫描报告聚合、Fuzz 报告汇总、MySQL 备份、ETL 同步等）统一由 **Airflow on K8s** 调度管理。
 >
-> 合并说明：2026-08-05 将原 [[Airflow-K8s-单节点验证方案\|Airflow-K8s-单节点验证方案]] 内容并入第十四章（验证方案），保留单节点验证流程的完整记录。
+> 合并说明：2026-08-05 将原「Airflow-K8s-单节点验证方案」内容并入第十四章（验证方案），保留单节点验证流程的完整记录。
 
 ## 一、选型
 
@@ -42,7 +42,7 @@ Airflow 的 **Executor（执行器）** 决定 Task 实际在哪里、以什么�
 | airflow-2 | Worker + Triggerer + PostgreSQL | 6u | 12G | 100G |
 
 > 来源：监控组件压缩配额让出 12u/24G/300G，Airflow 占用 12u/24G/200G，剩余 100G 留给 Grafana 备份盘。
-> 详见 [[DevOps资源量预估\|DevOps资源量预估]]
+> 详见「DevOps 资源量预估」
 
 ### 资源预估明细
 
@@ -346,14 +346,14 @@ default_args = {
 ## 十三、参考
 
 - 官方文档：https://airflow.apache.org/docs/helm-chart/
-- 部署方案总览：[[notes/1-工作/项目经历/04-CCE集群管理\|04-CCE集群管理]]
-- 资源量预估：[[DevOps资源量预估\|DevOps资源量预估]]
+- 部署方案总览：04-CCE 集群管理
+- 资源量预估：DevOps 资源量预估
 
 ## 十四、单节点验证方案
 
 > 在单节点 K8s 上模拟完整调度流程：Airflow DAG 按需拉起伪代码 Pod（安全扫描 / 工具服务 / Fuzz），SmartIDE 部署 WebIDE 开发环境，Prometheus + Grafana 采集指标。
 > Jenkins / MySQL 不在本次验证范围内。
-> 合并自原 [[Airflow-K8s-单节点验证方案\|Airflow-K8s-单节点验证方案]]（2026-08-05）。
+> 合并自原「Airflow-K8s-单节点验证方案」（2026-08-05）。
 
 ### 14.1 验证目标
 

@@ -214,5 +214,5 @@ T-0       ① 腾讯云旧 master：docker stop jenkins（保留容器不删 = �
 - [ ] Jenkins部署实战.md 第七章（集群外 master 配法）标注"被本方案取代"
 
 相关文档：
-- [[knowledge/devops/jenkins/02-Jenkins部署实战\|Jenkins部署实战]]
-- [[notes/1-工作/k3s部署实战\|k3s部署实战]]
+- Jenkins部署实战（practices/01）
+- k3s部署实战（practices/04）
