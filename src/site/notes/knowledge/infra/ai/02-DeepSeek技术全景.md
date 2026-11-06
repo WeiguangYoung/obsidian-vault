@@ -440,7 +440,7 @@ PD 分离：
 |:----|:----|
 | 项目名 | `dsh-superagent-prototype` |
 | 团队 | DeepSeek Harness |
-| 开源时间 | 2024-10-31（研究原型） |
+| 开源时间 | 2026-10-31（研究原型） |
 | 许可证 | **MIT** |
 | 仓库 | `github.com/deepseek-ai/dsh-superagent-prototype` |
 | 定位 | **研究代码，不是生产级软件** |
