@@ -73,8 +73,8 @@
 | 场景 | 工具 | 延伸阅读 |
 |:----|:----|:----|
 | C/C++ 通用 | CMake、Make、Ninja、**Bazel**、Gradle（Android） | [[knowledge/embedded/01-C-C++嵌入式构建流程\|C/C++ 嵌入式构建流程]]、[[knowledge/embedded/02-CMake构建学习笔记\|CMake 构建学习笔记]] |
-| 嵌入式交叉编译 | GCC ARM、IAR、Keil、AUTOSAR 工具链 | [[knowledge/industry/01-汽车行业专题\|汽车专题（AUTOSAR 构建）]] |
-| 机器人 | colcon（ROS2）、catkin | [[knowledge/industry/02-机器人行业专题\|机器人专题（ROS2 集成构建）]] |
+| 嵌入式交叉编译 | GCC ARM、IAR、Keil、AUTOSAR 工具链 | [[knowledge/devops/industry/01-汽车行业专题\|汽车专题（AUTOSAR 构建）]] |
+| 机器人 | colcon（ROS2）、catkin | [[knowledge/devops/industry/02-机器人行业专题\|机器人专题（ROS2 集成构建）]] |
 | 模型驱动 | MATLAB/Simulink 代码生成 | `industry/` （Simulink/MBD 内容待补） |
 | 多语言 | Maven、Gradle、npm、pip/uv、go build | — |
 

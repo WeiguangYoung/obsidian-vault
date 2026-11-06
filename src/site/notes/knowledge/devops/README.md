@@ -24,7 +24,7 @@
 | 六、可观测性 |
 | 七、AI 赋能 DevOps（AIOps） |
 
-> 行业方向（汽车 / 机器人）见 [[knowledge/industry/00-行业对比\|🏭 行业对比]]。
+> 行业方向（汽车 / 机器人）见 [[knowledge/devops/industry/00-行业对比\|🏭 行业对比]]。
 
 ---
 
@@ -2109,4 +2109,4 @@ prompt_log = '\n'.join(dict.fromkeys(context))   # 去重保序
 ## 相关文档
 
 - [[knowledge/devops/practices/README\|🛠️ 实战演练]] — 落地实操
-- [[knowledge/industry/00-行业对比\|🏭 行业对比]] — 行业方向
+- [[knowledge/devops/industry/00-行业对比\|🏭 行业对比]] — 行业方向
