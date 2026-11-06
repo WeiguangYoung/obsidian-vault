@@ -732,4 +732,4 @@ void loop() {
 
 - `01-C-C++嵌入式构建流程.md` — 从源码到固件的构建链路
 - `../../industry/02-机器人行业专题.md` — 机器人工位的能力地图
-- `../devops/practices/06-AI-Agent辅助CI排障实战.md` — AI 辅助排障的另一条思路
+- `../devops/practices/08-AI-Agent辅助CI排障实战.md` — AI 辅助排障的另一条思路

@@ -231,4 +231,4 @@ Git 不只是存代码，它是**整条流水线的触发源**：
 
 - [[knowledge/infra/git/02-Git提交与分支规范\|Git 提交与分支规范]]
 - [[knowledge/devops/practices/02-Jenkins流水线实战\|Jenkins 流水线实战]]
-- [[knowledge/devops/practices/08-制品管理与Harbor实战\|制品管理与 Harbor 实战]]
+- [[knowledge/devops/practices/07-制品管理与Harbor实战\|制品管理与 Harbor 实战]]

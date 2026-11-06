@@ -1,12 +1,19 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/language/backend/01-Flask入门/","title":"Flask 入门","tags":["python","flask","web","路由","restful"],"dg-note-properties":{"category":"后端 / Web 框架","title":"Flask 入门","source":"csdn","created":"2021-04-08","updated":"2026-11-01","tags":["python","flask","web","路由","restful"],"url":"https://blog.csdn.net/weixin_45536921/article/details/115525919"}}
+{"dg-publish":true,"permalink":"/knowledge/language/backend/01-Flask入门/","title":"Flask 入门","tags":["python","flask","web框架","路由","响应","jinja2","蓝图","数据库迁移","部署"],"dg-note-properties":{"category":"后端 / Web 框架","title":"Flask 入门","date":"2026-11-01","updated":"2026-11-06","tags":["python","flask","web框架","路由","响应","jinja2","蓝图","数据库迁移","部署"]}}
 ---
 
 
 # Flask 入门
 
+> 从最小可运行示例到生产部署的完整路径：**路由 → 请求参数 → 响应 → 模板 → 配置 → 数据库迁移 → 蓝图 → 部署**。
+> 每一节都有可直接复制的代码。
+
+返回 [[knowledge/language/backend/README\|🌐 后端开发]]
+
+---
+
 > 从「三行代码起一个 Web 服务」到「路由、请求、响应、蓝图」的完整最小闭环。
-> 数据库接入见 [[knowledge/language/backend/03-PyMySQL模块\|PyMySQL 模块]] 与 [[knowledge/language/backend/04-Flask数据库迁移\|Flask 数据库迁移]]。
+> 数据库迁移见本文第八章。
 
 ## 一、Flask 是什么
 
@@ -219,6 +226,38 @@ def download(name):
     return send_from_directory(UPLOAD_DIR, name, as_attachment=True)
 ```
 
+#### 5.5 返回值类型与构造方式小结（补充）
+
+视图函数返回值可以是：`字符串 / 字节串 / 字典 / 元组 / Response / WSGI callable`。
+
+**① 自动转换**：字符串/字节串 → `text/html`，响应码 200；字典 → `application/json`，响应码 200。
+
+**② 元组返回**：`(内容)`、`(内容, 状态码)`、`(内容, 响应头)`、`(内容, 状态码, 响应头)` 四种形式。
+
+**③ 手动构造**：
+
+| 方式 | 适用 |
+|:--|:--|
+| `jsonify(data)` | 返回 JSON，列表/字典皆可，前后端分离常用 |
+| `make_response(content, code)` | 需要精细控制响应头时；content 只能是字符串/字节串/字典 |
+
+```python
+# make_response 三种用法
+app.route('/a')
+def a():
+    return make_response({"username": "Alice"}), 200, {'content-type': 'application/json'}
+
+app.route('/b')
+def b():
+    return make_response('<h1>hi</h1>'), 200          # 支持 HTML
+
+app.route('/c')
+def c():
+    return make_response(render_template('x.html')), 200
+```
+
+> 响应码可以是 `200` 或 `"200 OK"`，格式必须是「数字 + 空格 + 说明」。
+
 ## 六、模板渲染（Jinja2）
 
 ```python
@@ -266,7 +305,69 @@ app.config.from_envvar('APP_CONFIG', silent=True)    # 生产用环境变量覆�
 
 **铁律**：`SECRET_KEY` 和数据库密码**不能写死在代码里**，用环境变量注入。
 
-## 八、蓝图（Blueprint）：项目变大后的必然选择
+## 八、数据库迁移（Flask-Migrate）
+
+> 项目迭代中表结构会变，迁移工具负责把「模型定义的变更」安全地同步到数据库。
+
+**① 安装工具**
+
+
+```shell
+pip3 install Flask-Migrate==2.7.0 Flask-Script==2.0.6 Flask-SQLAlchemy==2.5.1
+
+```
+**② 创建管理文件 `manage.py`**
+
+
+```python
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_script import Manager, Server
+from flask_migrate import Migrate, MigrateCommand
+
+
+app = Flask(__name__)
+
+# 初始化数据库对象
+db = SQLAlchemy()
+
+# 数据库对象初始化app
+db.init_app(app)
+
+# 设置管理器对象
+manager = Manager(app)
+
+# 配置数据库迁移
+Migrate(app=app, db=db)
+
+# 自定义命令
+manager.add_command('db', MigrateCommand)  # 创建数据库映射命令 init/migrate/upgrade
+manager.add_command('runserver', Server(host="0.0.0.0", port=5000, use_debugger=True))  # 创建启动命令
+
+# 启动管理器
+manager.run()
+
+```
+**③ 迁移三步**
+
+
+```shell
+python3 manage.py db init     # 初始化数据库迁移
+python3 manage.py db migrate  # 生成数据库迁移文件
+python3 manage.py db upgrade  # 执行迁移文件
+
+```
+**④ 启动项目**
+
+
+```shell
+python3 manage.py runserver
+
+```
+
+> ⚠️ 上例用的是 `Flask-Script`（已停止维护）。新项目建议改用 `flask db` CLI（Flask-Migrate ≥3.x 内置），不再需要 `manage.py`。
+
+## 九、蓝图（Blueprint）：项目变大后的必然选择
 
 单文件撑不住时，按业务拆蓝图：
 
@@ -305,7 +406,7 @@ def create_app():
 
 **工厂函数 + 蓝图**是 Flask 项目的标准骨架，测试和配置切换都靠它。
 
-## 九、部署（别用 `app.run` 上生产）
+## 十、部署（别用 `app.run` 上生产）
 
 ```bash
 # gunicorn：Linux 生产首选
@@ -331,7 +432,7 @@ CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:create_app()"]
 
 > `app.run()` 是开发用的单进程服务器，**并发差、无进程管理**，绝不能上生产。
 
-## 十、常见坑
+## 十一、常见坑
 
 | 现象 | 原因 | 解法 |
 |:----|:----|:----|
@@ -342,12 +443,9 @@ CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:create_app()"]
 | 上传文件名带 `../` | 未过滤 | `secure_filename()` |
 | 生产内存泄漏 | debug 模式运行 | 生产关 debug |
 
-## 十一、一句话总结
+## 十二、一句话总结
 
 > `Flask(__name__)` 起服务 → `@app.route` 定路由 → `request` 取参 → `return` 决定响应 → 项目变大用**蓝图 + 工厂函数** → 生产用 **gunicorn**。
 
 ## 相关文档
 
-- [[knowledge/language/backend/02-Flask响应结果\|Flask 响应结果]]
-- [[knowledge/language/backend/03-PyMySQL模块\|PyMySQL 模块]]
-- [[knowledge/language/backend/04-Flask数据库迁移\|Flask 数据库迁移]]
