@@ -5,7 +5,7 @@
 
 # 🐳 Docker · 目录导航
 
-> Docker 原理、环境安装、镜像构建、Rancher 与 Helm
+> Docker 原理、环境安装、GPU 支持、Rancher 与 Helm
 
 返回 [[首页\|🏠 首页]]
 
@@ -15,11 +15,9 @@
 
 | # | 文档 |
 |:--|:-----|
-| 01 | [[Docker 底层原理入门\|Docker 底层原理入门]] |
-| 02 | [[Ubuntu 安装 Docker 开发环境\|Ubuntu 安装 Docker 开发环境]] |
-| 03 | [[WSL 安装及 docker-desktop 目录迁移\|WSL 安装及 docker-desktop 目录迁移]] |
-| 04 | [[docker-compose 搭建 Mongo 副本集\|docker-compose 搭建 Mongo 副本集]] |
-| 05 | [[自定义 Nginx 镜像\|自定义 Nginx 镜像]] |
-| 06 | [[Docker 使用 NVIDIA 显卡\|Docker 使用 NVIDIA 显卡]] |
-| 07 | [[Rancher 安装 k8s\|Rancher 安装 k8s]] |
-| 08 | [[Helm 使用\|Helm 使用]] |
+| 01 | [[knowledge/devops/docker/01-Docker底层原理入门\|01-Docker底层原理入门]] |
+| 02 | [[knowledge/devops/docker/02-Ubuntu安装docker开发环境\|02-Ubuntu安装docker开发环境]] |
+| 03 | [[knowledge/devops/docker/03-WSL安装及docker-desktop目录迁移\|03-WSL安装及docker-desktop目录迁移]] |
+| 04 | [[knowledge/devops/docker/04-Docker使用NVIDIA显卡\|04-Docker使用NVIDIA显卡]] |
+| 05 | [[knowledge/devops/docker/05-Rancher安装k8s\|05-Rancher安装k8s]] |
+| 06 | [[knowledge/devops/docker/06-Helm使用\|06-Helm使用]] |
