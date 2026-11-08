@@ -1,0 +1,1040 @@
+---
+{"dg-publish":true,"permalink":"/knowledge/devops/index/","title":"DevOps 知识体系","tags":["DevOps","嵌入式","云原生","AIOps","知识体系","Linux","容器","Kubernetes","CI-CD","可观测性"],"dg-note-properties":{"title":"DevOps 知识体系","date":"2026-07-22","updated":"2026-11-06","tags":["DevOps","嵌入式","云原生","AIOps","知识体系","Linux","容器","Kubernetes","CI-CD","可观测性"]}}
+---
+
+
+# 🧭 DevOps 知识体系
+
+> 从 Linux 基础到 AIOps 的完整技术地图：**Linux/网络 → 容器编排 → CI/CD → 制品与配置 → 质量与安全 → 可观测性 → AIOps**。
+> 每章给「该学什么 + 核心认知」，落地实操见 [[knowledge/devops/practices/index\|🛠️ 实战演练]]。
+
+返回 [[首页\|🏠 首页]]
+
+---
+
+## 📑 章节索引
+
+| 章节 |
+|:--|
+| 一、Linux 网络与脚本基础 |
+| 二、容器与编排 |
+| 三、CI/CD 持续集成交付 |
+| 四、制品与配置管理 |
+| 五、质量与安全 |
+| 六、可观测性 |
+| 七、AI 赋能 DevOps（AIOps） |
+
+> 行业方向（汽车 / 机器人）见 [[knowledge/devops/industry/00-行业对比\|🏭 行业对比]]。
+> 机器人方向实操记录见 [[knowledge/robotics/index\|🤖 机器人实现]]。
+
+---
+
+## 一、Linux 网络与脚本基础
+
+> DevOps 的地基：Linux 系统管理、Shell 自动化、网络与安全基础，以及自动化脚本语言选型。
+
+### 1.1 Linux 系统管理
+
+- **文件系统与磁盘** Linux 里"一切皆文件"——普通文件、目录、设备、套接字，都通过统一的文件接口访问。日常运维第一件事，是搞清楚**磁盘空间去哪了**。
+
+`df` 和 `du` 经常成对使用，但看的不是一回事：`df` 展示的是**文件系统层面**的块占用（整个分区用了多少），`du` 统计的是**目录里文件实际占用的空间**。两者对不上时，最常见的原因是——**有文件被删除了，但进程还开着它的句柄**。这类文件对 `du` 不可见（目录项没了），却实实在在占着块（inode 还挂着），`df` 会如实反映。定位方法是 `lsof +L1`（列出 link count 为 0 的打开文件），释放要么重启持有它的进程，要么 `: > /proc/<pid>/fd/<fd>` 把内容清空。
+
+| 命令 | 作用 |
+|:----|:------|
+| `df -h` | 各文件系统的使用率 |
+| `du -sh /var/log` | 指定目录总占用 |
+| `ls -la` | 列出文件（含隐藏、权限） |
+| `lsof -p PID` | 进程打开的文件 |
+| `find / -name "*.log" -mtime -1` | 找最近一天修改的日志 |
+
+- **inode 与链接** 理解 inode 是理解 Linux 文件系统的钥匙。**inode 存的是文件的"身份"**——权限、属主、大小、时间戳、指向数据块的指针，唯独**不存文件名**。文件名只是目录里一条"名字 → inode 号"的映射。
+
+由此引出两种链接：**硬链接**（`ln src dst`）是给同一个 inode 挂第二个名字，两个名字地位平等，删掉一个另一个照常，且不能跨文件系统（inode 号只在单个文件系统内唯一）；**软链接**（`ln -s src dst`）则是单独的一个文件，内容就是"指向的路径"，所以能跨文件系统、能指向目录、也可能"悬空"（目标没了）。
+
+```bash
+ls -i file            # 查 inode 号
+stat file             # 看元数据详情
+find / -inum 12345    # 按 inode 反查文件
+```
+
+这也解释了一个经典现象：磁盘"满了"删文件却释放不出空间——因为 inode 还被进程引用，`du` 看不见，`df` 却减不掉。
+
+- **权限管理** Linux 的权限模型围绕"三种身份 × 三种操作"展开：身份是**属主（owner）/ 属组（group）/ 其他（other）**，操作是**读（r=4）/ 写（w=2）/ 执行（x=1）**。用 `ls -l` 看到的 `-rwxr-xr--`，就是三组三位的组合。
+
+```
+-rwxr-xr--  1 user group  4096 Jul 19 10:00 app
+ │││││││││
+ │└─ rwx (owner) ─── rwx = 7
+ │   └─ r-x (group) ── r-x = 5
+ │       └─ r-- (other) ─ r-- = 4
+```
+
+所以 `chmod 755` 的含义一目了然：属主可读写执行（7），属组和其他人只读+执行（5）。日常还要注意：**目录的 x 位含义是"能否进入/遍历"**，没有 x 的目录即使有 r 也进不去。
+
+| 命令 | 作用 |
+|:----|:------|
+| `chmod 755 file` | 改权限（数字或 `u+x` 符号法） |
+| `chown user:group file` | 改属主和属组 |
+| `sudo -u appuser cmd` | 以指定用户执行 |
+| `visudo` | 安全编辑 sudoers（带语法校验） |
+
+- **进程与信号** 进程是运行中的程序。`ps aux` 看快照，`top`/`htop` 看实时。**进程状态**是排障时的关键线索：`R` 运行中、`S` 可中断睡眠（在等事件，可被唤醒）、`D` 不可中断睡眠（通常在等磁盘/网络 IO，**连 kill -9 都杀不掉**）、`Z` 僵尸（已退出但父进程还没回收它的退出码）、`T` 已停止。
+
+**信号**是进程间通信的一种。最常用的两个：`SIGTERM`（15）是"请你优雅退出"，进程能捕获它做清理（关连接、刷缓冲）；`SIGKILL`（9）是"立即处决"，内核直接干掉，进程无法捕获，因此**可能丢数据**。所以规范是：先 `kill`（默认发 15），等一会儿不行再 `kill -9`。
+
+| 命令 | 作用 |
+|:----|:------|
+| `ps aux` | 所有进程快照 |
+| `top` / `htop` | 实时资源监控 |
+| `kill PID` | 发 SIGTERM（15，可捕获） |
+| `kill -9 PID` | 发 SIGKILL（9，不可捕获） |
+| `systemctl status/restart svc` | systemd 管理服务 |
+
+- **systemd 服务管理** systemd 是现代 Linux 的"1 号进程"，管着系统启动和服务生命周期。它用 **unit 文件**描述服务，并支持依赖关系（`After=`/`Requires=`），因此能按拓扑顺序拉起服务。日常最常踩的坑：**改完 unit 文件必须 `daemon-reload`**，否则 systemd 用的还是旧配置。
+
+```bash
+systemctl daemon-reload          # 改 unit 文件后必须执行
+systemctl enable --now svc       # 开机自启并立即启动
+systemctl list-dependencies svc  # 看依赖树
+journalctl -u svc --since "10 min ago"  # 看服务日志
+```
+
+- **排查常用** ```bash
+ps aux --sort=-%cpu | head -10   # CPU 占用最高的进程
+ps aux --sort=-%mem | head -10   # 内存占用最高的进程
+ss -tlnp | grep :8080            # 谁占着 8080 端口
+iostat -x 1                      # 磁盘 IO 展开视图（%util 高说明盘是瓶颈）
+free -h                          # 内存与 swap
+```
+
+## 1.2 Shell 自动化
+
+Shell 是运维的"胶水语言"：把一个个小工具用管道串起来，快速完成一次性任务。三类核心工具值得记牢。
+
+**grep 负责"找"**：`grep -r` 递归搜索，`grep -v` 反向过滤（排除匹配行）。**awk 负责"取列和算"**：它按行处理、按列切分，`$1` 是第一列、`$NF` 是最后一列、`$0` 是整行，还能带条件（`awk '$3 > 80 {print $1}'`）。**sed 负责"改"**：`s/old/new/g` 是全局替换，`-i` 原地修改。
+
+```bash
+# grep：过滤
+grep -r "ERROR" /var/log/     # 递归搜日志里的 ERROR
+grep -v "DEBUG" app.log       # 排除 DEBUG 行
+
+# awk：按列处理
+awk '{print $1, $NF}' file            # 打印第 1 列和最后一列
+df -h | awk '$5+0 > 80 {print $1}'    # 磁盘使用率超 80% 的分区
+
+# sed：替换
+sed 's/old/new/g' file        # 全局替换
+sed -i 's/debug//g' file      # 原地删除所有 debug
+```
+
+**定时任务用 cron**，格式是"分 时 日 月 周"五段。常见误区：cron 执行时**没有交互式 shell 的环境变量**（PATH 很短），所以脚本里最好用绝对路径、显式声明环境。另外 cron 的"周"和"日"是**或**的关系，同时指定容易踩坑。
+
+```bash
+# 分 时 日 月 周 命令
+0 2 * * * /scripts/backup.sh     # 每天凌晨 2 点
+*/5 * * * * /scripts/health.sh   # 每 5 分钟
+```
+
+写健壮的脚本，开头加 `set -euo pipefail` 是基本功：`-e` 遇错退出、`-u` 未定义变量报错、`-o pipefail` 让管道里任一环失败即失败。
+
+## 1.3 网络基础
+
+- **TCP/IP 分层** 网络通信被抽象成四层，每层只操心自己的事（分层解耦）：
+
+```
+┌─────────────┐
+│   应用层     │  HTTP / HTTPS / DNS / SSH
+├─────────────┤
+│   传输层     │  TCP / UDP
+├─────────────┤
+│   网络层     │  IP / ICMP
+├─────────────┤
+│   链路层     │  Ethernet / ARP
+└─────────────┘
+```
+
+**TCP vs UDP** 是这里的核心分水岭：TCP 面向连接、保证可靠有序（有握手、确认、重传、流量控制），代价是开销大；UDP 无连接、不保证到达和顺序，胜在轻快，适合 DNS 查询、视频流、游戏这类"丢一两包无所谓、要快"的场景。
+
+- **DNS 解析** DNS 把好记的域名翻译成 IP。最需要搞清楚的是**解析链路**：先查本地 hosts，再问本地 DNS 缓存/递归服务器，递归服务器若没缓存，就从**根域名服务器 → 顶级域（.com）→ 权威域名服务器**逐级问下去，最后拿到结果并缓存。`TTL` 决定了这条记录能被缓存多久——**TTL 短**适合需要快速切换（如切流量、故障转移），**TTL 长**则减少查询压力。
+
+| 记录 | 含义 |
+|:----|:------|
+| A | 域名 → IPv4 |
+| AAAA | 域名 → IPv6 |
+| CNAME | 域名 → 另一个域名（别名） |
+| MX | 邮件服务器 |
+
+```bash
+dig example.com +trace    # 从根开始跟踪解析全过程
+nslookup example.com      # 简单查询
+cat /etc/resolv.conf      # 本机 DNS 配置
+```
+
+- **负载均衡** 负载均衡按**工作层次**分两类。**L4** 只看 IP 和端口做转发，不解析应用层内容，性能高、通用，典型是 Nginx Stream、云 SLB；**L7** 会解析 HTTP，能按域名、路径、Header 路由，灵活但开销大，典型是 Nginx、K8s Ingress。
+
+```
+用户 → DNS → L4 LB:443 → Nginx（TLS 终结）→ L7 路由 → 后端 Pod
+```
+
+实际架构里常见的分工是：L4 把流量引进来，L7 在里层做精细路由，TLS 往往在 L7 这层终结。
+
+- **TLS 握手** HTTPS 的秘密在于"**握手用非对称、传输用对称**"这套组合拳。原因很实际：非对称加密（RSA/ECDHE）安全但慢，对称加密（AES）快但双方得先有同一把密钥——于是用非对称的方式，安全地协商出一把对称的会话密钥，之后的数据都用这把会话密钥加密。
+
+```
+Client Hello（支持的加密套件 + 随机数）
+  → Server Hello（选定的套件 + 随机数 + 证书）
+  → 客户端验证证书链（CA 签名 / 有效期 / 域名 SAN）
+  → 密钥交换（ECDHE）
+  → 双方各自导出会话密钥 → 加密通信
+```
+
+这里有三个常被追问的点：
+
+**前向保密（PFS）**——如果用 RSA 做密钥交换，服务器私钥一旦泄露，攻击者可以解密**历史上所有**截获的流量；换成 ECDHE（临时椭圆曲线），每次会话的密钥都是临时产生的，私钥泄露也解不开旧流量。
+
+**证书链**——信任是逐级传递的：站点证书由中间 CA 签发，中间 CA 由根 CA 签发，而根 CA 早已内置在浏览器/系统里。服务端必须下发**完整证书链**，否则某些客户端（不缓存中间证书的）会因拼不出链而报错。
+
+**验证什么**——客户端要校验证书是否由受信任 CA 签发、是否过期、证书里的域名（SAN）是否与访问的域名匹配。
+
+- **网络排障** 排障讲究"从下往上、逐层确认"：先 `ping` 通不通（网络层），再 `telnet host 443` 看端口开没开（传输层），然后 `curl -v` 看 HTTP 层细节，必要时 `tcpdump` 抓包看真实报文。
+
+```bash
+ping -c 4 host            # 连通性（ICMP）
+traceroute host           # 路由逐跳
+curl -v https://host      # HTTP 链路诊断
+ss -tlnp                  # 本机监听端口
+ss -tnp state established # 已建立的连接
+tcpdump -i eth0 port 80   # 抓包
+```
+
+- **TCP 三次握手与四次挥手** ```text
+握手：CLIENT → SYN → SERVER
+     CLIENT ← SYN+ACK ← SERVER
+     CLIENT → ACK → SERVER
+
+挥手：主动方 → FIN →  被动方
+     主动方 ← ACK ←  被动方     （半关闭：一方不再发，但仍能收）
+     主动方 ← FIN ←  被动方
+     主动方 → ACK →  被动方 → TIME_WAIT（等待 2MSL）
+```
+
+**为什么握手是三次而不是两次？** 两次的话，服务端收到一个 SYN 就建立连接，但这个 SYN 可能是**网络里滞留的旧请求**，服务端会白白占着资源等一个不会来的客户端。第三次 ACK 让服务端确认"对方确实收到了我的 SYN+ACK，且确实想连接"。
+
+**挥手为什么是四次？** 因为 TCP 是全双工的，一方说"我不发了"（FIN）之后，另一方可能还有数据要发，所以 ACK 和它自己的 FIN 不能合并，于是比握手多一次。
+
+**TIME_WAIT 为什么要等 2MSL？** 两个原因：一是确保自己最后的 ACK 能到达对方（对方没收到会重发 FIN，得有人应答）；二是让本次连接里滞留的旧报文在网络中消散，避免干扰下一个同四元组的新连接。
+
+**大量 TIME_WAIT / CLOSE_WAIT 怎么排查？** 一句话：TIME_WAIT 集中在**主动关闭方**，多了可以做 `tcp_tw_reuse` 复用；而 **CLOSE_WAIT 是"对方发了 FIN，我还没 close()"**——这是应用层没正确关闭连接，属于代码 bug，得改程序而不是调内核参数。
+
+```bash
+ss -s                                      # 连接状态汇总
+ss -tn state time-wait | wc -l             # TIME_WAIT 数量
+netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
+```
+
+### 1.4 安全基础
+
+- **SSH 免密与别名** SSH 用**非对称密钥**做认证：你把公钥放到服务器的 `authorized_keys`，登录时用私钥证明身份。`ed25519` 比 RSA 更短更安全，是当前推荐。`~/.ssh/config` 里配别名能省去每次敲一长串参数。
+
+```bash
+ssh-keygen -t ed25519          # 生成密钥对
+ssh-copy-id user@host          # 把公钥推到目标机
+
+# ~/.ssh/config 别名
+Host prod
+    HostName 10.0.1.100
+    User deploy
+    IdentityFile ~/.ssh/prod_key
+```
+
+- **证书与防火墙** ```bash
+# 查证书有效期
+openssl s_client -connect host:443 2>/dev/null | openssl x509 -noout -dates
+
+# 自签证书（仅测试）
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+
+# iptables 基本操作
+iptables -L -n                                   # 查看规则
+iptables -A INPUT -p tcp --dport 443 -j ACCEPT   # 放行 443
+
+# firewalld（更上层、更易用）
+firewall-cmd --add-port=8080/tcp --permanent
+firewall-cmd --reload
+```
+
+- **安全加固 Checklist** - [ ] 禁用 root SSH 登录，只用密钥认证
+- [ ] 防火墙只开放必要端口
+- [ ] 定期 `yum/apt update` 打安全补丁
+- [ ] 启用审计日志（`auditd`）
+- [ ] SELinux / AppArmor 保持 enforcing
+
+## 1.5 脚本语言选型
+
+不同语言在 DevOps 里的定位，是**按场景分的**，没有万能。选择的核心是看任务性质：一次性粘合 → Shell；复杂工具/API 调用/数据处理 → Python；写 K8s Operator 或高性能 CLI → Go；写 Jenkins Pipeline → Groovy。
+
+| 语言         | 适合                         | 不适合             |
+| :--------- | :------------------------- | :-------------- |
+| **Python** | CI/CD 工具、API 封装、数据处理、运维自动化 | 高性能服务、系统级工具     |
+| **Shell**  | 构建脚本、系统巡检、一次性操作            | 复杂业务逻辑、跨平台      |
+| **Go**     | K8s Operator、CLI 工具、中间件    | 快速原型验证          |
+| **Groovy** | Jenkins Pipeline           | 任何非 Jenkins 的场景 |
+
+- **Python** Python 是 DevOps 脚本的"万能胶"，生态最全。典型场景包括写构建/发布脚本、批量运维、调用各家 API（K8s / 云厂商 / GitLab）、处理日志和监控数据。调用 K8s API 时，官方 `kubernetes` 库是最直接的方式：
+
+```python
+from kubernetes import client, config
+
+config.load_kube_config()                     # 读 ~/.kube/config
+v1 = client.CoreV1Api()
+pods = v1.list_namespaced_pod(namespace='production')
+for pod in pods.items:
+    print(f"{pod.metadata.name}: {pod.status.phase}")
+```
+
+常用库：`requests`（HTTP）、`click`/`typer`（CLI 框架）、`Jinja2`（模板渲染，生成配置文件）、`pandas`（数据分析）。
+
+- **Go** Go 是"云原生时代的母语"——K8s、Docker、etcd、Prometheus 全是 Go 写的。它的强项是**编译成单二进制、并发模型简洁、性能接近 C**。用 `client-go` 操作 K8s 是标准做法：
+
+```go
+import "k8s.io/client-go/kubernetes"
+
+clientset, _ := kubernetes.NewForConfig(config)
+pods, _ := clientset.CoreV1().Pods("default").List(ctx, metav1.ListOptions{})
+for _, pod := range pods.Items {
+    fmt.Println(pod.Name)
+}
+```
+
+- **Groovy** Groovy 在这里几乎是"为 Jenkins Pipeline 而生"的语言——它运行在 JVM 上，语法灵活，是写 Jenkinsfile 和 Jenkins Shared Library 的语言。
+
+```groovy
+// Jenkins 共享库示例
+def call(Map config) {
+    pipeline {
+        agent any
+        stages {
+            stage('Build') {
+                steps { sh config.buildCmd }
+            }
+        }
+        post {
+            failure {
+                emailext body: '${BUILD_URL}', subject: 'Build Failed', to: config.owner
+            }
+        }
+    }
+}
+```
+
+---
+
+## 二、容器与编排
+
+> 从"一个容器怎么跑起来"，到"成百上千个容器怎么被调度、编排、治理"。
+
+## 2.1 Docker
+
+> 底层原理（namespaces / cgroups / UnionFS）见「Docker 底层原理入门」。
+
+- **容器到底"轻"在哪** 要理解容器，先要和虚拟机对比。虚拟机是"**造一台完整的假电脑**"：它模拟硬件、装一个完整的 Guest OS，隔离最彻底，但启动要分钟级、体积 GB 起、资源开销大。容器则完全不同——它不模拟硬件，而是**直接借用宿主机的内核**，只是通过内核提供的几项机制"假装"自己独占一台机器。因此容器启动是秒/毫秒级、体积 MB 级、几乎没有额外资源开销。
+
+| 维度 | 容器 | 虚拟机 |
+|:----|:------|:------|
+| 隔离级别 | 进程级（共享内核） | 硬件级（独立 Guest OS） |
+| 启动速度 | 秒 / 毫秒级 | 分钟级 |
+| 体积 | MB 级 | GB 级 |
+| 隔离强度 | 较弱（共享内核） | 强 |
+| 资源开销 | 低 | 高 |
+
+**这套"假装"由三样东西合起来实现**（Docker 的本质）：
+
+- **namespaces**——让容器"看不见别人"：PID、网络、挂载、用户等命名空间隔离，容器里 `ps` 只能看到自己的进程。
+- **cgroups**——让容器"用不超过配额"：限制 CPU、内存、IO 的用量。
+- **UnionFS（联合文件系统）**——让容器"有自己的一套文件"：把只读的镜像层和可写的容器层叠成一个统一的根文件系统。
+
+代价是隔离没那么硬（共享内核意味着内核漏洞可能被穿透），所以高安全场景会叠加 gVisor、Kata 这类"沙箱容器"来补强。
+
+- **Dockerfile 与镜像分层** 镜像不是一坨整体，而是**一层层叠出来的只读层**。Dockerfile 里每条会改文件系统的指令（`RUN`/`COPY`/`ADD`）都产生一层。这个设计带来两个直接好处：**层可被多个镜像共享**（磁盘省），**未变的层可复用缓存**（构建快）。
+
+```dockerfile
+FROM node:18-alpine AS builder       # 构建阶段
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
+FROM node:18-alpine                  # 运行阶段（重新起一层干净基础）
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+EXPOSE 3000
+CMD ["node", "server.js"]
+```
+
+几个要点：
+
+- **多阶段构建**：把"编译需要但运行不需要"的东西（编译器、源码、构建缓存）留在 builder 阶段，最终镜像只拷产物，体积能小一个数量级。
+- **层缓存利用**：`COPY package*.json` 再 `RUN npm ci`，是为了"依赖没变就不重装"——只要改了业务代码而不动依赖，前面的层直接命中缓存。
+- **Alpine 基础镜像**：体积小、攻击面小（用 musl 而非 glibc，个别依赖可能有兼容问题）。
+- **.dockerignore**：把 `node_modules`、`.git` 排除在构建上下文外，既快又不误拷。
+
+- **docker-compose** 单机跑多个容器时，`docker-compose` 用一份 YAML 描述"一整套服务"：谁依赖谁、端口怎么映射、卷怎么挂。
+
+```yaml
+version: "3.8"
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      DB_HOST: db          # 用服务名当主机名，compose 内置 DNS
+    depends_on: [db]
+  db:
+    image: postgres:16-alpine
+    volumes: [pgdata:/var/lib/postgresql/data]
+volumes:
+  pgdata:
+```
+
+`depends_on` 只保证**启动顺序**，不保证 db "已经能接受连接"——真要用健康检查（`healthcheck`）来等就绪。
+
+- **镜像安全扫描** 镜像里可能带着有漏洞的基础库，所以推送前扫描是标配：
+
+```bash
+trivy image myapp:v1.2.3        # 输出按严重级分层的漏洞列表
+```
+
+（CI 里通常集成成"扫到 HIGH/CRITICAL 就阻断推送"），扫描可以作为构建后阶段，也可以 `docker build` 时内置。
+
+## 2.2 Kubernetes
+
+Kubernetes（K8s）解决的是"**一个容器好跑，一千个容器怎么管**"的问题。它的核心哲学只有一句话：**声明式 API + 控制器循环**。你不去命令它"启动 3 个副本"，而是"声明"期望状态（我要 3 个副本、镜像是什么），然后一堆**控制器（Controller）**在后台不断比对"实际状态"和"期望状态"，不满足就动手补齐——这个过程叫 **Reconcile（调谐）**。所以哪怕一个 Pod 崩了，控制器也会自动再拉一个起来，这就是"自愈"的来源。
+
+- **核心资源** | 资源 | 作用 | 一句话理解 |
+|:----|:------|:------|
+| **Pod** | 最小调度单位 | 一个或多个共享网络/存储的容器 |
+| **Deployment** | 无状态应用 | 管副本数、滚动更新、回滚 |
+| **StatefulSet** | 有状态应用 | 有稳定网络标识和独立存储（数据库、MQ） |
+| **Service** | 服务发现与负载均衡 | 给一组 Pod 一个稳定入口 |
+| **Ingress** | HTTP 路由 | 域名/路径 → Service（七层） |
+| **ConfigMap / Secret** | 配置 / 敏感配置 | 把配置从镜像里剥离出来 |
+| **PVC** | 存储申请 | 声明"我要一块持久盘" |
+
+- **从 Deployment 看 K8s 的层次** ```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: myapp }
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: myapp }     # 认领带此标签的 Pod
+  template:                          # Pod 模板：Pod 长什么样
+    metadata:
+      labels: { app: myapp }
+    spec:
+      containers:
+      - name: app
+        image: myapp:v1.2.3
+        ports: [{ containerPort: 3000 }]
+        resources:
+          requests: { cpu: 100m, memory: 128Mi }
+          limits:   { cpu: 500m, memory: 256Mi }
+        livenessProbe:
+          httpGet: { path: /health, port: 3000 }
+        readinessProbe:
+          httpGet: { path: /ready,  port: 3000 }
+```
+
+层次关系是：**Deployment 管 ReplicaSet，ReplicaSet 管 Pod**。Deployment 每次更新镜像，就会生成一个新的 ReplicaSet，旧 RS 保留着以便回滚。
+
+- **Service 与 Ingress：从"临时 IP"到"稳定入口"** Pod 的 IP 是临时的——重建就变。所以需要一个稳定的访问入口：**Service**。它通过**标签选择器**找到一组 Pod，并给它们一个稳定的虚拟 IP（ClusterIP），请求进来后自动负载均衡到后端 Pod。**Ingress** 则更上层，处理"从集群外进来的 HTTP 流量"：按域名和路径路由到不同 Service，通常由 Nginx、Traefik 这类 Ingress Controller 实现。
+
+```yaml
+# Service：给 myapp 的 Pod 一个稳定入口
+apiVersion: v1
+kind: Service
+metadata: { name: myapp }
+spec:
+  selector: { app: myapp }
+  ports: [{ port: 80, targetPort: 3000 }]
+---
+# Ingress：app.example.com/ → myapp:80
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: { name: myapp }
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service: { name: myapp, port: { number: 80 } }
+```
+
+### 2.3 调度与资源
+
+**调度（Scheduling）** 决定"这个 Pod 该放到哪个节点"。流程分两步：**过滤（Filter）**——先剔除所有不满足条件的节点（资源不够、亲和不符、污点没容忍）；**打分（Score）**——给剩下的节点打分，选最优的绑定上去。
+
+- **requests 与 limits：调度与上限** 这两个参数容易混，但作用完全不同：
+
+- **requests** 是"**保证量**"——调度器按它来找节点。一个节点上所有 Pod 的 requests 总和不能超过节点容量，所以 requests 决定了 Pod **能不能**被调度上去。
+- **limits** 是"**上限**"——运行时不能超。**超 CPU 会被限流（throttle）**（进程变慢但不死）；**超内存会被 Kill（OOMKilled）**（内存无法"限流"，只能杀）。
+
+- **QoS 与驱逐** 你会不会在某天发现 Pod 被莫名赶走？这跟 **QoS（服务质量等级）** 有关。K8s 按 requests/limits 的设置给 Pod 分三级，节点资源紧张时**按等级从低到高驱逐**：
+
+| QoS 等级 | 条件 | 驱逐优先级 |
+|:----|:------|:------|
+| **Guaranteed** | 每个容器 requests == limits | 最低（最后逐） |
+| **Burstable** | 设置了但两者不等 | 中 |
+| **BestEffort** | 完全没设置 | 最高（最先逐） |
+
+所以生产的关键服务，要么设 Guaranteed，要么给足 requests，别让它在资源紧张时第一个被牺牲。
+
+- **探针：判断 Pod"活着"和"能干活"** K8s 用三种探针来监控容器健康，它们的**失败后果不同**，用错会带来麻烦：
+
+| 探针 | 判断 | 失败后果 |
+|:----|:------|:------|
+| **livenessProbe** | 进程还活着吗 | 重启容器 |
+| **readinessProbe** | 准备好接流量了吗 | 从 Service 摘除（**不重启**） |
+| **startupProbe** | 启动完成了吗 | 完成前不执行 liveness |
+
+关键区别：**liveness 失败会重启**，所以它只该判断"进程是不是死了"。如果拿它去判断"依赖的数据库连不上"，就会导致 Pod 反复重启雪崩——这种情况应该用 readiness（摘流量，等依赖恢复后再接）。
+
+### 2.4 网络与存储
+
+这三块是 K8s 里"插件化"的部分，K8s 本身只定接口，实现交给你选：
+
+| 模块 | 说明 | 常用 |
+|:----|:------|:------|
+| **CNI**（网络） | 给 Pod 分配 IP、打通跨节点通信 | Calico（网络策略强）/ Flannel（简单） |
+| **CSI**（存储） | 把云盘/NFS 等挂给 Pod | 各云厂商 CSI 插件 |
+| **NetworkPolicy** | 控制 Pod 间谁能访问谁 | 需 CNI 支持（Calico 可以） |
+
+### 2.5 Helm
+
+装一个复杂应用，往往要写一堆 YAML（Deployment、Service、Ingress、ConfigMap……）。**Helm 是把这些 YAML "模板化 + 参数化 + 版本化"的工具**，解决三个痛点：一套模板适配多环境（values 分层）、一次安装/升级/回滚（Release 版本化）、应用可打包分发（Chart）。
+
+```bash
+helm create myapp              # 生成 Chart 骨架
+# myapp/
+# ├── Chart.yaml                # 元信息
+# ├── values.yaml               # 默认参数
+# └── templates/                # 模板（deployment.yaml 等）
+
+helm install myapp ./myapp \
+  -f values-base.yaml \
+  -f values-prod.yaml          # 后者覆盖前者
+```
+
+| 概念 | 说明 |
+|:----|:------|
+| **Chart** | Helm 包，含模板 + 默认 values |
+| **values 分层** | base → env(dev/test/prod) → override，逐层覆盖 |
+| **Release** | 一次安装的实例（同名可升级、可回滚） |
+| **Repo** | Chart 的托管分发（Harbor / Chart Museum） |
+
+### 2.6 多集群
+
+当一个集群扛不住（跨地域、容灾、隔离）时，就需要多集群：
+
+| 场景 | 方案 |
+|:----|:------|
+| 跨地域灾备 | 多集群部署，DNS/GSLB 分流 |
+| 跨集群发布 | ArgoCD + ApplicationSet 统一下发 |
+| 集群联邦 | KubeFed 跨集群资源同步 |
+| 混合云 | 部分自建 K8s，部分公有云 |
+
+```
+                 ┌──────────┐
+                 │  DNS/GSLB│
+                 └────┬─────┘
+           ┌──────────┴──────────┐
+           ▼                     ▼
+   ┌──────────────┐    ┌──────────────┐
+   │  集群A (上海) │    │  集群B (新加坡) │
+   │  ArgoCD同步   │    │  ArgoCD同步   │
+   └──────────────┘    └──────────────┘
+```
+
+### 2.7 云平台
+
+公有云把 K8s 打包成"托管服务"，省掉自己维护控制面的成本。
+
+- **主流云厂商** | 云厂商 | K8s 服务 | 特点 |
+|:----|:------|:------|
+| 阿里云 | ACK | 国内份额第一，生态全 |
+| 腾讯云 | TKE | 游戏/社交场景有优势 |
+| 火山引擎 | VKE | 字节生态，性价比高 |
+| AWS | EKS | 全球份额第一，服务最丰富 |
+| Azure | AKS | 企业 Microsoft 生态 |
+| GCP | GKE | K8s 原生体验最好 |
+
+- **阿里云 ACK 核心服务** | 服务 | 说明 |
+|:----|:------|
+| **ACK** | 托管 K8s，支持专有版 / 托管版 / 边缘版 |
+| **ACR** | 容器镜像服务（对标 Harbor，企业版支持扫描） |
+| **SLB** | 负载均衡（对接 Ingress / LoadBalancer Service） |
+| **OSS** | 对象存储（静态资源、日志归档） |
+| **NAS** | 文件存储（多 Pod 共享） |
+| **SLS** | 日志服务（采集 + 检索 + 告警） |
+| **CMS** | 云监控（可对接 Prometheus） |
+
+- **AWS EKS 核心服务** | 服务 | 说明 |
+|:----|:------|
+| **EKS** | 托管 K8s 控制面 |
+| **ECR** | 容器镜像仓库 |
+| **ELB** | 负载均衡（ALB Ingress Controller） |
+| **S3** | 对象存储 |
+| **CloudWatch** | 监控 + 日志 |
+| **Route53** | DNS（多集群流量调度） |
+
+- **多云管理** ```
+                 ┌──────────┐
+                 │  DNS/GSLB│
+                 └────┬─────┘
+           ┌──────────┴──────────┐
+           ▼                     ▼
+   ┌──────────────┐    ┌──────────────┐
+   │  阿里云上海    │    │  AWS 新加坡   │
+   │  ACK + OSS   │    │  EKS + S3    │
+   └──────────────┘    └──────────────┘
+```
+
+| 维度 | 策略 |
+|:----|:------|
+| 流量调度 | DNS/GSLB 按地域分流，就近接入 |
+| 数据同步 | 异步复制或数据库多地域 |
+| CI/CD | ArgoCD + ApplicationSet 统一管理 |
+| 监控 | 多集群统一 Prometheus / Grafana |
+| 成本 | 按需选不同厂商的实例与计费 |
+| 灾备 | 主备或双活，明确 RPO/RTO |
+
+- **云原生服务对照** | 类型 | 厂商方案 | 开源方案 |
+|:----|:------|:------|
+| 对象存储 | OSS / S3 / COS | MinIO |
+| 负载均衡 | SLB / ELB / CLB | Nginx / HAProxy |
+| CDN | 全站加速 / CloudFront | 自建不推荐 |
+| Serverless | 函数计算 / Lambda | Knative / OpenFaaS |
+| 消息队列 | RocketMQ / SQS | Kafka / RabbitMQ |
+| 数据库 | RDS / Aurora | 自建 MySQL / PostgreSQL |
+
+---
+
+## 三、CI/CD 持续集成交付
+
+> 从"代码提交"到"部署上线"这条流水线，怎么自动化、怎么控风险。
+
+## 3.1 流水线平台
+
+CI/CD 平台是这条流水线的"发动机"。选型时主要看两点：**代码托管在哪**（决定集成成本），**流程有多复杂**（决定灵活性需求）。
+
+| 平台 | 特点 | 适用场景 |
+|:----|:------|:------|
+| **Jenkins** | 最灵活，插件生态丰富，Pipeline as Code (Groovy) | 自建平台、复杂流程、嵌入式/汽车行业 |
+| **GitLab CI** | 与 GitLab 深度集成，.gitlab-ci.yml 声明式配置 | 源码在 GitLab、中小团队 |
+| **GitHub Actions** | GitHub 原生，Marketplace 生态好 | 开源项目、GitHub 为主的技术栈 |
+
+Jenkins 的优势是"什么都能干"——尤其适合需要自定义构建环境（比如交叉编译、License 绑定的 Windows IDE）的场景，这也是嵌入式/汽车行业偏爱它的原因。
+
+- **CI / CD / CD：三个词的区别** 这三个缩写常被混淆，其实是一条链上的三个位置：
+
+- **CI（持续集成）**：开发者频繁把代码合入主干，每次合入都**自动构建 + 跑测试**，目的是"尽早发现集成问题"——不要等到发布前才发现三周前的改动冲突了。
+- **CD（持续交付，Continuous Delivery）**：在 CI 基础上，保证**任何时刻都能一键发布**——但最后一步上线要**人工审批**。
+- **CD（持续部署，Continuous Deployment）**：把最后一步也自动化，**过了门禁就自动发到生产**。
+
+一句话记忆：**Delivery 与 Deployment 的区别，就在"最后一步是否人工"**。
+
+- **Pipeline as Code** 把流水线定义写进代码仓库（Jenkinsfile / .gitlab-ci.yml），而不是在界面上点。好处很直接：**可评审**（走 Code Review）、**可追溯**（跟着代码版本走）、**可复用**（抽成模板）。
+
+```groovy
+// Jenkins 声明式 Pipeline
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') { steps { git url: '...' } }
+        stage('Build')    { steps { sh 'make' } }
+        stage('Test')     { steps { sh './run_tests.sh' } }
+        stage('Deploy')   { steps { sh 'kubectl apply -f deploy/' } }
+    }
+}
+```
+
+```yaml
+# GitLab CI
+stages: [build, test, deploy]
+
+build:
+  stage: build
+  script: make
+  artifacts:
+    paths: [build/]        # 产物传给后续 stage
+
+test:
+  stage: test
+  script: ./run_tests.sh
+
+deploy:
+  stage: deploy
+  script: kubectl apply -f deploy/
+  only: [main]             # 只在 main 分支执行
+```
+
+## 3.2 流水线设计
+
+一条标准的 CI/CD 流水线，本质是**一串"检查点"**——每一步都是一道关，过不了就拦下：
+
+```
+代码提交 → 编译 → 静态检查 → 单元测试 → 镜像构建 → 部署到测试 → 验收测试 → 发布
+```
+
+| 阶段 | 内容 | 失败处理 |
+|:----|:------|:------|
+| 编译 | make / mvn / go build | 阻断，通知开发者 |
+| 静态检查 | SonarQube / Cppcheck / lint | 设置质量门禁阈值 |
+| 单元测试 | GTest / pytest / JUnit | 必须 100% 通过 |
+| 镜像构建 | docker build + push | 阻断 |
+| 部署测试 | 部署到 test 环境 | 人工介入 |
+| 验收测试 | E2E / 冒烟测试 | 阻断发布 |
+| 发布 | 金丝雀 / 滚动更新 | 自动回滚或人工决策 |
+
+设计时有两条原则值得记住：**越早的阶段越快**（编译/静态检查要秒级，不能拖到开发者不耐烦）；**越靠近发布的阶段越谨慎**（增加人工审批、灰度、回滚预案）。
+
+## 3.3 多环境管理
+
+为什么要分多个环境？因为**风险要分级消化**：谁也不想让一个未经验证的改动直接面对真实用户。
+
+| 环境 | 用途 | 数据 | 稳定性要求 |
+|:----|:------|:------|:---:|
+| **dev** | 开发调试、快速验证 | 造数/脱敏 | 低 |
+| **test** | 集成测试、功能验证 | 造数/脱敏 | 中 |
+| **staging** | 预发布、生产镜像验证 | 脱敏生产数据 | 高 |
+| **production** | 真实用户服务 | 真实数据 | 最高 |
+
+代码是**逐级晋级**的——在 dev 通过、去 test 集成、到 staging 压测、最后上 prod：
+
+```
+dev（开发自测）→ 提交 MR 触发 CI
+  ↓
+test（集成测试 + 自动化回归）
+  ↓ 通过 → 晋级
+staging（预发布验证 + 压测）
+  ↓ 通过 → 发布审批
+production（金丝雀 → 全量）
+```
+
+- **环境一致性的三条铁律** - **代码一致**：**同一个镜像**贯穿所有环境——绝不"在每个环境重新构建一次"，否则测的不是同一个东西。
+- **配置分离**：环境差异只体现在 ConfigMap / Secret，镜像不变。
+- **基础设施一致**：集群配置、节点规格尽量对齐，减少"在测试好好的，上生产就崩"。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp:v1.2.3           # 所有环境同一镜像
+        envFrom:
+        - configMapRef:
+            name: app-config-{{env}}   # 按环境注入不同配置
+```
+
+- **环境隔离** 环境之间必须隔离，否则一个环境的操作会污染另一个：
+
+| 维度 | 隔离方式 |
+|:----|:------|
+| 网络隔离 | 不同 Namespace / VPC / 网段 |
+| 权限隔离 | RBAC：dev 只能操作 dev |
+| 资源隔离 | 不同节点池 / 资源配额 |
+| 数据隔离 | 独立数据库，禁止跨环境访问 |
+
+- **多环境流水线** 用 `when` 控制"什么分支部署到什么环境"，是最常见的多环境编排方式：
+
+```groovy
+pipeline {
+    stages {
+        stage('Build') { steps { sh 'docker build' } }
+        stage('Deploy Dev') { steps { sh 'kubectl apply -f dev/' } }
+        stage('Deploy Test') {
+            when { branch 'develop' }
+            steps { sh 'kubectl apply -f test/' }
+        }
+        stage('Deploy Staging') {
+            when { branch 'release/*' }
+            steps { sh 'kubectl apply -f staging/' }
+        }
+        stage('Deploy Prod') {
+            when { branch 'main' }
+            input { message '确认发布到生产？' }    // 人工审批闸门
+            steps { sh 'kubectl apply -f prod/' }
+        }
+    }
+}
+```
+
+## 3.4 发布策略
+
+发布策略要回答的核心问题：**怎么把新版本交给用户，同时把风险降到最低**。不同策略在这条"风险-成本"轴上各有位置。
+
+| 策略 | 原理 | 风险 | 回滚速度 | 资源成本 | 适用场景 |
+|:----|:------|:---:|:---:|:---:|:------|
+| **滚动更新** | 逐个替换实例，分批完成 | 低 | 快 | 低 | 无状态服务（大部分场景） |
+| **蓝绿部署** | 新旧两套完整环境，切流量 | 极低 | 秒级 | 高（双倍） | 有状态服务、大版本变更 |
+| **金丝雀发布** | 小比例流量先验证，逐步放量 | 中 | 快 | 中 | 需要真实流量验证 |
+| **A/B 测试** | 按用户特征分流，对比效果 | 低 | 快 | 中 | 产品决策、功能验证 |
+| **影子发布** | 镜像生产流量但不影响用户 | 零 | 无需回滚 | 中 | 新架构验证、压测 |
+
+- **滚动更新** K8s 默认策略：**逐个替换**旧实例，用 `maxSurge`（允许超出多少）和 `maxUnavailable`（允许少多少）控制节奏。优点是不需要额外资源、平滑；缺点是新旧版本会**短暂共存**，对版本兼容性有要求。
+
+```
+v1  v1  v1  v1          v1  v2  v1  v1         v2  v2  v2  v2
+[ ] [ ] [ ] [ ]   →   [ ] [ ] [ ] [ ]   →   [ ] [ ] [ ] [ ]
+```
+
+- **蓝绿部署** 维护两套**完整环境**：老的 Blue 在跑，新的 Green 部署好待命，验证 OK 后**一次性把流量切过去**。回滚就是切回来，秒级。代价是**双倍资源**，而且要提前处理数据库这类有状态组件的兼容。
+
+```
+┌─────────────┐      切换 DNS/LB       ┌─────────────┐
+│   🔵 Blue   │ ──────────────────→   │   🟢 Green  │
+│   v1 运行中  │                        │   v2 就绪    │
+└─────────────┘                        └─────────────┘
+```
+
+- **金丝雀发布** 名字来自"矿工带金丝雀下井试毒"。做法是**先放一小撮真实流量给新版本**，观察指标没问题再逐步放量：
+
+```
+10% 用户 → v2（观察 15 分钟）→ ✅
+50% 用户 → v2（观察 15 分钟）→ ✅
+100% 用户 → v2
+```
+
+关键观察指标：**错误率、延迟 P99、业务指标**（如下单成功率）。工具常用 Istio / Linkerd（流量分割）、Argo Rollouts。
+
+- **怎么选：决策树** ```
+需要按用户分流量验证产品效果？
+  ├─ 是 → A/B 测试
+  └─ 否 → 需要零风险切换？
+            ├─ 是 → 蓝绿部署
+            └─ 否 → 需要真实流量逐步验证？
+                      ├─ 是 → 金丝雀发布
+                      └─ 否 → 滚动更新（默认选择）
+```
+
+- **回滚策略** 再完善的发布也要有退路：
+
+| 场景 | 回滚方式 |
+|:----|:------|
+| 滚动更新 | `kubectl rollout undo` |
+| 蓝绿部署 | LB 切回 Blue |
+| 金丝雀 | 流量权重调回 0%，或 rollout undo |
+| 数据库变更 | **反向迁移脚本（必须有！）** |
+
+数据库变更是最容易被忽略的回滚难点——代码能秒回，但改过的表结构/数据得有**反向迁移**才能回去。
+
+- **发布 Checklist** - [ ] Code Review 通过
+- [ ] CI 流水线全部绿灯
+- [ ] 监控仪表盘已配置
+- [ ] 告警规则已检查
+- [ ] 回滚方案已确认
+- [ ] 数据库迁移已准备（含反向）
+- [ ] 通知已发出
+
+### 3.5 GitOps
+
+GitOps 的核心思想：**把 Git 当作集群状态的"唯一事实源"**。集群里跑什么，全写在一份 Git 仓库里；有个 Agent（如 ArgoCD）盯着这份仓库，发现集群实际状态和 Git 里声明的期望状态不一致，就自动把它拉回来。
+
+| 工具 | 特点 |
+|:----|:------|
+| **ArgoCD** | K8s 原生，Web UI 强大，自动同步 |
+| **Flux CD** | 轻量，Helm 集成好，Git 原语操作 |
+
+```
+开发者 Push 代码 → CI 构建镜像 → 更新部署仓库的 YAML → ArgoCD 检测变更 → 自动同步到集群
+```
+
+**四大原则**：声明式（描述期望状态）、版本化且不可变（存 Git、可追溯）、拉取式自动同步（控制器主动拉）、持续调谐（自动纠偏，即 Drift Detection）。
+
+GitOps 与传统 CI/CD 最大的区别在**推送方向**：
+
+| 模式 | 机制 | 优点 | 缺点 |
+|:----|:------|:------|:------|
+| **Push**（传统） | CI 直接 `kubectl apply` | 简单直观 | CI 得持有集群凭证，安全面大 |
+| **Pull**（GitOps） | 集群内 Agent 拉 Git | 凭证不出集群，可审计、可回滚 | 需额外部署控制器 |
+
+**为什么 Pull 更安全？** 传统模式下，CI 系统必须拿到集群的管理员凭证才能部署——一旦 CI 被攻破，集群就裸奔了。GitOps 反过来：部署凭证只存在集群内部的 Agent 手里，CI 只负责往 Git 推代码，攻击面小得多。
+
+### 3.6 Repo — 多仓库管理
+
+一个大型嵌入式项目，往往拆成**几十甚至上百个 Git 仓库**（BSP 层、中间件层、各应用层各自独立）。一个个 `git clone`/`git pull` 显然不现实——**Repo** 就是 Google 为 Android/AOSP 开发的多仓库管理工具，专门解决这个问题。
+
+它的核心是一份 **manifest（XML 清单）**：把所有仓库的地址、分支、路径写在一起，之后 `repo sync` 一键同步全部，`repo start` 在全部仓库创建同名分支，`repo upload` 批量提交评审。
+
+| 概念 | 说明 |
+|:----|:------|
+| **manifest** | XML 清单，定义所有仓库的地址、分支、路径 |
+| **default.xml** | 默认清单，描述整个项目的组成 |
+| **repo sync** | 一键同步所有仓库到指定分支/标签 |
+| **repo start** | 在所有相关仓库创建主题分支 |
+| **repo upload** | 批量推送到 Gerrit 评审 |
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="origin" fetch="ssh://git@gerrit.example.com:29418/" />
+  <default revision="main" remote="origin" sync-j="4" />   <!-- 并行 4 路同步 -->
+
+  <project path="bsp/mcu-a"      name="platform/bsp/mcu-a"      revision="v2.1.0" />
+  <project path="bsp/mcu-b"      name="platform/bsp/mcu-b"      revision="v2.1.0" />
+  <project path="middleware/someip" name="middleware/someip" />
+  <project path="apps/cluster"   name="apps/cluster" />
+  <project path="apps/ivi"       name="apps/ivi" />
+  <project path="tools/build"    name="tools/build" />
+</manifest>
+```
+
+```bash
+repo init -u ssh://git@gerrit/project/manifest.git -b main  # 初始化（拉取 manifest）
+repo sync                                                    # 同步所有仓库
+repo start feature-xxx --all                                 # 全部仓库开分支
+repo status                                                  # 查看全部变更
+repo upload                                                  # 批量提交 Gerrit 评审
+repo forall -c 'git clean -fdx'                              # 对所有仓库执行命令
+```
+
+和 Git submodule 的区别：submodule 是"每个仓库各自记录子仓库的指针"，逐个更新很繁琐；Repo 是"用一份清单统一管理"——**适合"仓库多且需要整体协同"的场景**（这也是汽车/AOSP 类项目的标配）。
+
+### 3.7 Gerrit — 代码评审系统
+
+Gerrit 和 GitLab MR 最大的不同在**评审粒度**：GitLab 评审的是"一个分支/MR"，而 Gerrit 评审的是**单个 Commit**。每个 Commit 进 Gerrit 后是一个独立的"Change"，靠 `Change-Id` 跟踪。
+
+| 维度 | Gerrit | GitLab MR |
+|:----|:------|:----------|
+| 评审粒度 | 单个 Commit | 整个分支/MR |
+| 工作流 | Commit → Review → amend 重提 → +2 → Submit | Push 分支 → MR → Review → Merge |
+| 权限模型 | 细粒度：+1 / +2 分权 | 相对粗粒度 |
+| 适用场景 | 大型开源项目（AOSP）、汽车行业 | 通用企业 |
+| 学习曲线 | 陡峭 | 平缓 |
+
+Gerrit 的权限模型值得留意：**Code-Review +1** 表示"我看过，认可但不够格合并"，**+2** 才是"批准合并"；CI 回写的是 **Verified +1/-1**（验证通过与否）。两套独立的分数，把人评审和机器验证分开。
+
+```
+开发者 git commit → repo upload
+    ↓
+Gerrit 接收为一个 Change
+    ↓
+CI 触发验证（基于 refs/changes/xx/yy/zz 这个特殊 ref）
+    ↓
+CI 回写 Verified +1 / -1
+    ↓
+人工 Review（Code-Review +2）
+    ↓
+Submit → 合入目标分支
+```
+
+CI 通过 Jenkins 的 Gerrit Trigger 插件监听变更：
+
+```groovy
+pipeline {
+    agent any
+    triggers {
+        gerrit(
+            project: 'platform/bsp/mcu-a',
+            branch: 'refs/heads/main',
+            triggerOn: [
+                patchsetCreated(approvalCategory: 'Code-Review', approvalValue: '+1')
+            ]
+        )
+    }
+    stages {
+        stage('Verify') {
+            steps {
+                sh 'cmake -B build && cmake --build build'
+                sh 'ctest --test-dir build --output-on-failure'
+            }
+        }
+    }
+}
+```
+
+### 3.8 KubeSphere — 容器平台
+
+KubeSphere 是在原生 K8s 之上**加了一层"好用"**的平台。原生 K8s 功能强但门槛高（RBAC 要手写、监控日志要自己搭、流水线要自己装 Jenkins），KubeSphere 把这些打包成了开箱即用的一套。
+
+| 模块 | 功能 |
+|:----|:------|
+| **多租户管理** | 企业空间 → 项目 → 资源三级隔离，比原生 RBAC 友好 |
+| **DevOps 流水线** | 内置 Jenkins 引擎，可视化编排 |
+| **灰度发布** | 蓝绿 / 金丝雀 / 流量镜像一键配置 |
+| **微服务治理** | 基于 Istio / Spring Cloud 的服务网格 |
+| **应用商店** | 基于 Helm 的应用模板市场 |
+| **可观测性** | 内置 Prometheus + Grafana + EFK 日志 |
+
+```
+拉取代码 → 单元测试 → 代码分析 → 镜像构建 → 推送仓库 → 部署到开发环境 → 部署到生产
+```
+
+KubeSphere 把 Jenkins Pipeline 封装成可视化编排，支持凭证管理、构建节点池、流水线模板——**降低了维护 Jenkins 的成本**。
+
+| 场景 | KubeSphere 的优势 |
+|:----|:------|
+| 团队权限管理 | 企业空间/项目/角色体系，无需手写 RBAC |
+| 流水线 | 开箱即用的 DevOps 引擎 |
+| 日志/监控 | 内置可观测性，省去自建 EFK/Prometheus |
+| 应用发布 | 灰度/蓝绿/金丝雀一键配置 |
+
+### 3.9 多技术栈统一流水线设计
+
+现实中的团队往往要同时维护 C++ / Java / Go / Python 多种技术栈，如果每个栈一套流水线，维护成本会失控。统一流水线的思路是**抽公共、分差异**：
+
+```
+              ┌─────────────────────┐
+              │    代码仓库层        │
+              │ Git / Repo / Gerrit │
+              └─────────┬───────────┘
+                        │
+        ┌───────────────┼───────────────┐
+        ▼               ▼               ▼
+  ┌──────────┐  ┌──────────┐  ┌──────────┐
+  │ C++ 构建 │  │ Java构建 │  │ Go/Py    │
+  │ CMake    │  │ Maven    │  │ go build │
+  │ Conan    │  │ Gradle   │  │ pip      │
+  │ 交叉编译 │  │ Spring   │  │          │
+  └────┬─────┘  └────┬─────┘  └────┬─────┘
+       │             │             │
+       └─────────────┼─────────────┘
+                     ▼
+           ┌──────────────────┐
+           │    质量门禁       │      ← 公共环节（统一）
+           │ SonarQube/Trivy  │
+           └────────┬─────────┘
+                    ▼
+           ┌──────────────────┐
+           │  制品 & 部署      │      ← 公共环节（统一）
+           │ Nexus + K8s      │
+           └──────────────────┘
+```
+
+**公共环节**（拉代码、质量门禁、制品归档、部署）抽成 Shared Library，各语言栈只写自己的"构建 + 测试"差异部分——这样加一个新项目，只需填几个参数即可复用整条流水线。
+
+---
+
+## 四、制品与配置管理
+
+> 代码写完之后，怎么管分支、怎么存产物、怎么管配置和密钥。
+
+### 4.1 代码管理
+
+- **分支策略：三种主流玩法** 分支策略的选择，本质是在"**发布节奏的确定性**"和"**集成的频繁度**"之间做取舍。
+
+**Git Flow** 是最"重"的一套：有 `main`（生产）、`develop`（集成分支）、`feature/*`（功能）、`release/*`（发布准备）、`hotfix/*`（紧急修复）五类分支。它适合**有明确版本发布周期**的传统项目——缺点是分支多、合并路径长、容易"合并地狱"。
+
+**Trunk-Based** 是最"轻"的：所有人往一条主干（main）上提交，分支存活时间很短（几小时到一两天）。它要求**自动化测试足够强**（否则不敢直接合主干），但配合持续部署最顺。
+
+**GitHub Flow** 介于两者之间：`main` + 短生命周期的 feature 分支，提 PR、合并即部署。简单项目、SaaS 产品常用。
+
+| 策略 | 特点 | 适用 |
+|:----|:------|:------|

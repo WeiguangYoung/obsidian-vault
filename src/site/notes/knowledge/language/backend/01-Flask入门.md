@@ -8,7 +8,7 @@
 > 从最小可运行示例到生产部署的完整路径：**路由 → 请求参数 → 响应 → 模板 → 配置 → 数据库迁移 → 蓝图 → 部署**。
 > 每一节都有可直接复制的代码。
 
-返回 [[knowledge/language/backend/README\|🌐 后端开发]]
+返回 [[knowledge/language/backend/index\|🌐 后端开发]]
 
 ---
 

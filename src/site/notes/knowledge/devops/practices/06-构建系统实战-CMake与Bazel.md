@@ -8,7 +8,7 @@
 > 两条路线的完整实操：**CMake 是嵌入式工程的事实标准**（交叉编译、链接脚本、闭源库集成都能拿住），**Bazel 是规模化构建的未来**（可复现、远程缓存、多语言统一）。
 > 第一部分给 CMake 的 7 个核心能力逐个落地，第二部分给一次从 Make/CMake 迁到 Bazel 的真实改造。
 
-返回 [[knowledge/devops/practices/README\|🛠️ 实战演练]]
+返回 [[knowledge/devops/practices/index\|🛠️ 实战演练]]
 
 ---
 

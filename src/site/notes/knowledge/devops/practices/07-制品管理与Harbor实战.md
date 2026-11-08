@@ -8,7 +8,7 @@
 > 从「制品是什么」到「Harbor 怎么用」：**第一部分给全景与选型**（制品类型、工具分层、命名规范、生命周期、岗位要求），**第二部分给实操**（Harbor 部署、监控接入、RBAC + 漏洞门禁、保留策略/GC、Robot Account + Webhook、Trivy 弱网坑）。
 > 所有 Harbor 命令与输出均在真实环境跑通。
 
-返回 [[knowledge/devops/practices/README\|🛠️ 实战演练]]
+返回 [[knowledge/devops/practices/index\|🛠️ 实战演练]]
 
 ---
 
