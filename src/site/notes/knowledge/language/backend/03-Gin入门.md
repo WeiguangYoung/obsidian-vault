@@ -337,4 +337,4 @@ ENTRYPOINT ["/app"]
 
 - [[knowledge/language/backend/01-Flask入门\|Flask 入门]]
 - [[knowledge/language/backend/02-Django入门\|Django 入门]]
-- [[knowledge/infra/linux/03-Ubuntu搭建Golang环境\|Ubuntu 搭建 Golang 环境]]
+- Ubuntu 搭建 Golang 环境（见 `knowledge/devops/docker/` 相关文档）

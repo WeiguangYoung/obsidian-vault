@@ -894,6 +894,196 @@ spec:
 
 **当时残留（业务层，另排）**：`静态检查 (cppcheck)` / `(ktlint Kotlin)` 分支仍失败——属工具缺失/代码问题，与基础设施无关。
 
+### 6.8 cppcheck 报 `No header in #include` → SDK 宏技巧导致的误报
+
+**现象**：`UDS_S32K144_Bootloader/main` #5 构建阻断：
+
+```
+❌ Cppcheck (codecheck) 发现 1 条问题（阈值 0），构建阻断
+[CPPCheck] Successfully parsed file .../cppcheck-report.xml
+[CPPCheck] -> found 1 issue (skipped 0 duplicates)
+```
+
+但 gcc 编译**完全不报错**（30+ 条 `-Warray-compare` / `-Wpointer-to-int-cast` 都是编译期告警，与此无关）。
+
+**定位**：本地复现同一命令即可看到唯一一条：
+
+```xml
+<error id="preprocessorErrorDirective" severity="error" msg="No header in #include">
+    <location file="SDK/platform/devices/devassert.h" line="67"/>
+</error>
+```
+
+**根因**：`devassert.h` 用了 `#include` 宏拼接的防护技巧，cppcheck 的预处理器解不了 → 报错。**这是厂商 SDK 文件，不是自研代码，且 gcc 能正常处理。**
+
+**解决**：按已有 `--suppress=*:*S32K144*.h` 的思路，把 SDK 目录整体排除：
+
+```groovy
+--suppress=*:*S32K144*.h \
+--suppress=preprocessorErrorDirective:SDK/* \   // 新增
+```
+
+**教训**：cppcheck 的 `preprocessorErrorDirective` 在厂商 SDK 上几乎必踩（各种 `#include` 宏技巧）。**接入新 SDK 时，第一件事就是把 SDK 目录的该类告警 suppress 掉**，否则每次都在这一条上卡住，还会让人误以为「代码有问题」。
+
+---
+
+### 6.9 源文件 GBK 编码 → warnings-ng 无法生成指纹（增量门禁失效）
+
+**现象**：`UDS_S32K144_Bootloader/main` #6 日志里成片的错误：
+
+```
+[CPPCheck] -> created fingerprints for 421 issues (skipped 104 issues)
+[CPPCheck] [-ERROR-] Can't create fingerprints for some files:
+ - 'UDS_ProtocolStack/LIN_tp_cfg.h', provided encoding 'UTF-8' seems to be wrong
+ - 'UDS_ProtocolStack/TP_cfg.h', provided encoding 'UTF-8' seems to be wrong
+ - 'UDS_ProtocolStack/autolibc.h', provided encoding 'UTF-8' seems to be wrong
+ ...（共 88 处）
+```
+
+**根因**：`420 生成 + 104 跳过 = 525 总条数`，**1/5 的问题没能生成指纹**。而 warnings-ng 的增量门禁（`referenceBuild` / `qualityGates(NEW)`）**完全依赖指纹比对**：
+
+- 无指纹 → 每次构建都被当作「全新问题」
+- 于是 `maxErrors`/增量两种门禁**都失效或行为不可预期**
+- 且构建日志被 88 行 encoding 错误刷屏，真正的失败原因被淹没
+
+**原因**：自研 C 源码（`UDS_ProtocolStack` / `UDS_DriverConfig` 等）的中文注释是 **GBK 编码**，warnings-ng 按 `reportEncoding: 'UTF-8'` 读取失败。
+
+**解决**：批量转码（52 个 `.c`/`.h`）：
+
+```python
+for p in files:
+    raw = open(p, "rb").read()
+    try: raw.decode("utf-8"); continue      # 已是 UTF-8 跳过
+    except UnicodeDecodeError: pass
+    open(p, "w", encoding="utf-8", newline="").write(raw.decode("gbk"))
+```
+
+修复后对比（同一条 MISRA 规则、同一份代码）：
+
+| | 修复前 #6 | 修复后 #7 |
+|:--|:--|:--|
+| 生成指纹 | 421 条，**跳过 104** | **525 条，跳过 0** |
+| encoding 报错 | 88 处 | **0 处** |
+
+**教训**：
+
+1. **`resolved paths (40 found, 0 not found)` 只说明路径能对上，不代表能生成指纹**——真正的信号是 `created fingerprints for N issues (skipped M)`，**`skipped > 0` 必须当故障处理**，否则增量门禁是「假可用」。
+2. 老项目的 GBK 注释是隐性技术债，**接入任何按 UTF-8 解析的工具（warnings-ng / SonarQube / IDE）前先统一编码**。
+3. 转码是纯编码变更，`git diff` 会显示 52 文件全量改动，但内容等价——**commit message 必须写明「仅编码变化，内容未改」**，方便 review。
+
+---
+
+### 6.10 `cannot lock ref 'refs/remotes/origin/main'` —— 推送撞上并发 checkout
+
+**现象**：`UDS_S32K144_Bootloader/main` #8 失败，堆栈很长但根因只有一行：
+
+```
+error: cannot lock ref 'refs/remotes/origin/main':
+  is at 0a9eedaccc... but expected fb6ceb6cc9...
+ ! fb6ceb6..0a9eeda  main -> origin/main  (unable to update local ref)
+ERROR: Error fetching remote repo 'origin'
+ERROR: Maximum checkout retry attempts reached, aborting
+```
+
+**根因**：**竞态**。时间线：
+
+| 时刻 | 事件 |
+|:--|:--|
+| 19:07:50 | #8 开始 `checkout`，workspace 里 `origin/main` ref 指向 `fb6ceb6` |
+| 同一时刻 | 我推送了 `0a9eeda`（加 `maxErrors`） |
+| 19:07:51 | `git fetch` 发现远端已变，但本地 ref 拒绝更新 → 失败 |
+
+多分支 Job 复用同一 workspace，**ref 状态是「上次构建留下的」**；push 与 checkout 撞车就会这样。
+
+**解决**：**直接重跑**（#9 一次通过）。推送稳定后再触发即可。
+
+**根治建议**：
+
+- Job 配置里勾 **`Clean before checkout`**（代价是全量 clone）
+- 或给 Multibranch 配 `Wipe out repository & force clone` 策略
+- 自动化脚本里 **push 之后 sleep 几秒再触发**，别贴着推
+
+**教训**：这类失败**看起来像网络/权限问题（`Error fetching remote repo`），实际是 git ref 竞态**。看到 `cannot lock ref ... is at X but expected Y`、且 X 是刚推上去的 commit，就是并发，不是配置坏。
+
+---
+
+### 6.11 `codeCheck` 的 `maxErrors` 默认 0 → 存量告警让分支永久红
+
+**现象**：接入 MISRA 后 main 分支**每次都失败**，日志：
+
+```
+--- MISRA-C:2012 (codecheck) 报告摘要：525 条 ---
+❌ MISRA-C:2012 (codecheck) 发现 525 条问题（阈值 0），构建阻断
+```
+
+**根因**：ci-lib 的 `codeCheck` 在分支模式下，**未显式传 `maxErrors` 时默认回退 0**：
+
+```groovy
+// vars/codeCheck.groovy
+int max = (cfg.maxErrors != null) ? (cfg.maxErrors as int) : 0
+if (count > max) {
+    error "❌ ${name} 发现 ${count} 条问题（阈值 ${max}），构建阻断"
+}
+```
+
+代码注释写得很清楚：**「避免忘传参数导致门禁静默失效」**——设计本身是对的，但意味着**任何有存量的仓库首次接入必须显式给基线**。
+
+**解决**：接入时先跑一次拿到准确存量，再把数字写死作为基线：
+
+```groovy
+codeCheck(
+    id: 'misra',
+    name: 'MISRA-C:2012 (codecheck)',
+    report: 'artifacts/codecheck/Misra/misra-report.xml',
+    maxErrors: 525,        // 存量基线，仅拦截新增
+    run: '''...'''
+)
+```
+
+之后 `525 ≤ 525` 通过；后续引入第 526 条才会红。
+
+**教训**：
+
+1. **`maxErrors` 不传 = 0 = 任何告警都阻断**。接入新仓库时这是第一个要确认的参数。
+2. 设基线前**必须先解决编码问题**（§6.9），否则条数不准、字面增量也不可靠。
+3. 基线要写注释标明来源和日期（`// 存量基线（2026-11-07 实测）`），否则半年后没人知道这数字怎么来的。
+4. 基线是**「冻结存量、只拦新增」**的过渡手段，**存量治理要另排期**，别让它变成永久豁免。
+
+---
+
+### 6.12 `build` vs `buildWithParameters`：无参 Job 的 400「Nothing is submitted」
+
+**现象**：用 API 触发构建，`POST /job/xxx/build` 报错：
+
+```
+HTTP ERROR 400 Nothing is submitted
+```
+
+加 `-d "placeholder=1"` 仍是 400。
+
+**排查**：
+
+| 端点 | 结果 | 含义 |
+|:--|:--|:--|
+| `build` | 400 `Nothing is submitted` | Jenkins 2.555 的 Stapler 要求 POST 带表单体 |
+| `buildWithParameters` | 400 `xxx is not parameterized` | 该 Job 没有参数 |
+
+**解决**：**按 Job 类型选端点，且 POST 必须带表单体**：
+
+```bash
+# 无参数 Job：build + 任意表单字段
+curl -X POST -H "Jenkins-Crumb: $CRUMB" -d "x=1" \
+  "http://<jenkins>/job/<name>/build"
+
+# 有参数 Job：buildWithParameters
+curl -X POST -H "Jenkins-Crumb: $CRUMB" \
+  "http://<jenkins>/job/<name>/buildWithParameters"
+```
+
+另需 **crumb + cookie**（`-c` 存、`-b` 带），否则 403。
+
+**教训**：Jenkins API 的 400 有两种完全不同的含义——**「没带表单体」**和**「这 Job 不是参数化的」**，从错误文本能区分。触发脚本应**先查 Job 的 `property` 里有没有 `parameterDefinitions`**，再决定用哪个端点。
+
 ---
 
 ## 附录 A · 实践指南（流程性内容）

@@ -119,14 +119,14 @@ fusermount -u /data1
 
 ### 5.2 关键参数
 
-| 参数 | 作用 |
-|:---|:---|
-| `--vfs-cache-mode full` | 读+写都走本地缓存，兼容性最好（支持 append、随机写、`O_TRUNC` 等）。**代价**：大文件双份占用本地磁盘 |
-| `--allow-other` | 允许 root 以外的用户访问挂载点（默认仅挂载者可见）|
-| `--vfs-cache-max-size` | 限制本地缓存上限（如 `10G`），防缓存撑爆磁盘 |
-| `--vfs-cache-max-age` | 缓存最长保留时间（如 `24h`）|
-| `--buffer-size` / `--dir-cache-time` | 调吞吐与目录缓存时长 |
-| `--cache-dir` | 自定义缓存目录（默认在 `/tmp/rclone` 或 `~/.cache/rclone`）|
+| 参数                                   | 作用                                                            |
+| :----------------------------------- | :------------------------------------------------------------ |
+| `--vfs-cache-mode full`              | 读+写都走本地缓存，兼容性最好（支持 append、随机写、`O_TRUNC` 等）。**代价**：大文件双份占用本地磁盘 |
+| `--allow-other`                      | 允许 root 以外的用户访问挂载点（默认仅挂载者可见）                                  |
+| `--vfs-cache-max-size`               | 限制本地缓存上限（如 `10G`），防缓存撑爆磁盘                                     |
+| `--vfs-cache-max-age`                | 缓存最长保留时间（如 `24h`）                                             |
+| `--buffer-size` / `--dir-cache-time` | 调吞吐与目录缓存时长                                                    |
+| `--cache-dir`                        | 自定义缓存目录（默认在 `/tmp/rclone` 或 `~/.cache/rclone`）                |
 
 > 缓存模式四档：`off`（直读，不支持写入）→ `minimal` → `writes` → `full`（最兼容、最占空间）。需要**随机写/数据库/编辑器**，选 `full`。
 
