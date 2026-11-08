@@ -8,7 +8,7 @@
 > GitOps 的落地工具：**把 Git 仓库当作集群的唯一事实源**，ArgoCD 在集群里盯着这份仓库，发现实际状态和期望状态不一致就自动拉回来。
 > 和传统「CI 直接 `kubectl apply`」相比，**部署凭证不出集群**，攻击面小得多。
 
-返回 [[knowledge/devops/README\|🧭 DevOps 知识体系]]
+返回 [[knowledge/devops/00-索引\|🧭 DevOps 知识体系]]
 
 ---
 
@@ -537,7 +537,7 @@ CI（Jenkins / GitLab CI）                  CD（ArgoCD）
 
 ## 相关文档
 
-- [[knowledge/devops/gitlab/README\|🦊 GitLab CI/CD]] — CI 侧构建与推送
-- [[knowledge/devops/jenkins/README\|🧩 Jenkins]] — 另一套 CI 平台
-- [[knowledge/devops/kubernetes/README\|☸️ Kubernetes]] — K8s 基础
+- [[knowledge/devops/gitlab/00-索引\|🦊 GitLab CI/CD]] — CI 侧构建与推送
+- [[knowledge/devops/jenkins/00-索引\|🧩 Jenkins]] — 另一套 CI 平台
+- [[knowledge/devops/kubernetes/00-索引\|☸️ Kubernetes]] — K8s 基础
 - `knowledge/devops/practices/03-CI工程化实战.md` — CI 工程化实战

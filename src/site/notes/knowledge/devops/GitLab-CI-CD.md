@@ -8,7 +8,7 @@
 > GitLab 不只是代码托管——它把 **仓库 + CI/CD + 制品库 + 安全扫描 + 环境管理** 做在一个平台里。
 > 相比 Jenkins「自己拼装插件」的方式，GitLab CI 通过一个 `.gitlab-ci.yml` 就能跑通完整流水线。
 
-返回 [[knowledge/devops/README\|🧭 DevOps 知识体系]]
+返回 [[knowledge/devops/00-索引\|🧭 DevOps 知识体系]]
 
 ---
 
@@ -584,7 +584,7 @@ trigger-downstream:
 
 ## 相关文档
 
-- [[knowledge/devops/jenkins/README\|🧩 Jenkins]] — 另一套 CI 平台（功能模块详解）
-- [[knowledge/devops/argocd/README\|🚢 ArgoCD]] — GitOps 持续部署
+- [[knowledge/devops/jenkins/00-索引\|🧩 Jenkins]] — 另一套 CI 平台（功能模块详解）
+- [[knowledge/devops/argocd/00-索引\|🚢 ArgoCD]] — GitOps 持续部署
 - `knowledge/devops/practices/03-CI工程化实战.md` — GitLab CI 实战与双平台对比
 - `knowledge/devops/practices/01-Jenkins部署与迁移实战.md` — Jenkins 部署实操
