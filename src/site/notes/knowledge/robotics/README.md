@@ -56,54 +56,50 @@
 
 | 症状 | 去哪查 |
 |:--|:--|
-| ROS 2 装不上 / `packages.ros.org` 卡死 | 01 §4.1 |
-| `rosdep update` 卡在 GitHub | 01 §2.4 |
-| Gazebo 在 CI 里起不来 / 无显示器 | 01 §3.4 · §5.3 |
-| `nvidia-smi` command not found | 01 附录 |
-| 装完驱动 `modprobe nvidia` 报 No such device | 01 附录 |
-| 激光雷达 / 相机话题都没有 | 01 附录 |
-| colcon 构建报错 | 01 §3.3 |
-| 命令行传 URDF 参数报错 | 02 §6.1 |
-| launch 改完不生效 | 02 §6.3 |
-| TF 树缺 `base_footprint` | 02 §5.1 |
-| 参数改了不生效 / 想多配置跑流水线 | 02 §3 |
-| 改一个包结果重编一堆 / 想只跑影响面 | 03 §3 · §4 |
-| 明明编译了但运行还是旧代码 | 03 §5 |
-| CMake 缓存污染 / 改了依赖没用 | 03 §7.1 |
-| CI 里环境变量太长 / 镜像太大 | 03 §6 |
-| Gazebo headless 卡死不响应 | 04 §6 |
-| `ros_gz_bridge` 配了但没话题 | 04 §4 |
-| `InvalidParameterTypeException` | 04 §7.1 |
-| 新增入口点后 `StopIteration` | 04 §7.2 |
-| 仿真跑不起来但进程还在 | 04 §6.2 |
-| cv2 报 _ARRAY_API not found | 05 §4 坑1 |
-| TF 树缺 base_link | 05 §4 坑2 |
-| 激光数据里全是 `.inf` | 05 §8.4 |
-| Docker 构建卡在 exporting layers | 06 §1 坑1 |
-| Dockerfile 卡在 curl ros.key | 06 §1 坑2 |
-| docker pull 任何镜像都卡住 | 06 §1 坑3 |
-| 容器里 colcon 找不到 ament_cmake | 06 §1 坑4 |
-| 容器里 Gazebo 没有传感器话题 | 06 §1 坑5 |
-| Docker 磁盘占用暴涨 | 06 §5 |
-| `apt install xxx:arm64` 报 not installable | 07 §3 |
-| 交叉编译 CMake 报缺 ament 包 | 07 §4 |
-| `ModuleNotFoundError: ament_package` | 07 §5 |
-| `No 'rosidl_typesupport_c' found` | 07 §6 |
-| 链接报找不到 libpython3.10.so | 07 §7 |
-| 模型换了性能崩了没人发现 | 08 §1 |
-| 模型评测数据不稳定 | 08 §8.1 |
-| 门禁假绿（exit code 取错） | 08 §8.2 |
-| Jenkins agent 连不上 / UnsupportedClassVersion | 08 §6 坑1-2 |
-| systemd 用户服务 216/GROUP | 08 §6 坑3 |
-| Jenkins 里 source: not found | 08 §6 坑5 |
-| Groovy 报 No such property | 08 §6 坑6 |
-| standardPipeline 说缺 colcon/ros2 | 06 §6 坑7 |
-| colcon test 报 install layout merged | 06 §6 坑8 |
-| CI 里报模型文件不存在 | 06 §6 坑9 |
-| **门禁全绿但构建 FAILURE** | 06 §6 坑10 |
-| 单类指标误判 | 06 §6 坑11 |
-| `LaserScan` 没有 `frame_id` 属性 | 06 §8.5 |
-
+| ROS 2 装不上 / `packages.ros.org` 卡死 | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §4.1 |
+| `rosdep update` 卡在 GitHub | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §2.4 |
+| Gazebo 在 CI 里起不来 / 无显示器 | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §3.4 · §5.3 |
+| colcon 构建报错（环境层） | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §3.3 |
+| 命令行传 URDF 参数报错 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §6.1 |
+| launch 改完不生效 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §6.3 |
+| TF 树缺 `base_footprint` | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §5.1 |
+| 参数改了不生效 / 多配置跑流水线 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §3 |
+| 改一个包结果重编一堆 / 只跑影响面 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §3 · §4 |
+| 明明编译了但运行还是旧代码 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §5 |
+| CMake 缓存污染 / 改了依赖没用 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §7.1 |
+| CI 里环境变量太长 / 镜像太大 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §6 |
+| Gazebo headless 卡死不响应 | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §6 |
+| `ros_gz_bridge` 配了但没话题 | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §4 |
+| `InvalidParameterTypeException` | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §7.1 |
+| 新增入口点后 `StopIteration` | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §7.2 |
+| 仿真跑不起来但进程还在 | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §6.2 |
+| cv2 报 `_ARRAY_API not found` | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] §4 坑1 |
+| TF 树缺 `base_link` | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] §4 坑2 |
+| **Docker 构建卡在 exporting layers** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑1 |
+| **Dockerfile 卡在 curl ros.key** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑2 |
+| **docker pull 任何镜像都卡住** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑3 |
+| **容器里 colcon 找不到 ament_cmake** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑4 |
+| **容器里 Gazebo 没有传感器话题** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑5 |
+| **Docker 磁盘占用暴涨** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §5 |
+| **Jenkins agent 连不上 / UnsupportedClassVersion** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑1-2 |
+| **systemd 用户服务 216/GROUP** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑3 |
+| **Jenkins 里 `source: not found`** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑5 |
+| **Groovy 报 `No such property`** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑6 |
+| **standardPipeline 说缺 colcon/ros2** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑7 |
+| **colcon test 报 install layout merged** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑8 |
+| **CI 里报模型文件不存在** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑9 |
+| **门禁全绿但构建 FAILURE** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑10 |
+| **单类指标误判** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑11 |
+| `apt install xxx:arm64` 报 not installable | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §3 |
+| 交叉编译 CMake 报缺 ament 包 | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §4 |
+| `ModuleNotFoundError: ament_package` | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §5 |
+| `No 'rosidl_typesupport_c' found` | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §6 |
+| 链接报找不到 libpython3.10.so | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §7 |
+| 模型换了性能崩了没人发现 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §1 |
+| 模型评测数据不稳定 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.1 |
+| 门禁假绿（exit code 取错） | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.2 |
+| 激光数据里全是 `.inf` | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.4 |
+| `LaserScan` 没有 `frame_id` 属性 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.5 |
 ---
 
 ## 🎯 已固化的关键认知
