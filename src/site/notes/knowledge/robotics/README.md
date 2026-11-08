@@ -5,10 +5,10 @@
 
 # 🤖 机器人实现 · 目录导航
 
-> 机器人方向的学习与实践记录：环境搭建 → 节点通信 → 仿真 → SIL/HIL → 机器人 CI 工程化。
+> 机器人方向的学习与实践记录：学习清单 → 环境搭建 → 节点通信 → colcon 构建 → 仿真与 SIL → 视觉 → 机器人 CI → 多架构 → 算法门禁 → 横向对照。
 > 目标是补齐「机器人 CI 构建 / 系统集成」岗位的能力缺口。
 >
-> 路线规划见 [[notes/1-工作/07-机器人转行学习清单\|📋 机器人转行学习清单]] ｜ 行业背景见 [[knowledge/devops/industry/02-机器人行业专题\|🏭 机器人行业专题]]
+> 路线规划见 [[knowledge/robotics/00-机器人入门路线\|📋 机器人入门路线]] ｜ 行业背景见 [[knowledge/devops/industry/02-机器人行业专题\|🏭 机器人行业专题]]
 
 返回 [[首页\|🏠 首页]]
 
@@ -16,21 +16,22 @@
 
 ## 📊 目录概览
 
-> **编号规则**：文件名前缀 = 学习阶段编号（0-7），横向对照放最后。
+> **编号规则**：00 是学习清单（总纲），01 起按学习路径顺序排，横向对照放最后。
 
-| 编号 | 阶段 | 文档 | 状态 |
+| 编号 | 主题 | 文档 | 状态 |
 |:--:|:--|:--|:--|
-| **00** | 环境基线（ROS 2 + GPU） | [[knowledge/robotics/00-环境-ROS2搭建\|00-环境-ROS2搭建]] | ✅ 完成 |
-| **01** | 阶段 1 · 节点通信 | [[knowledge/robotics/01-阶段1-节点通信与TF2\|01-阶段1-节点通信与TF2]] | ✅ 完成 |
-| **02** | 阶段 2 · colcon 构建 | [[knowledge/robotics/02-阶段2-colcon构建体系\|02-阶段2-colcon构建体系]] | ✅ 完成 |
-| **03** | 阶段 3 · 仿真与 SIL | [[knowledge/robotics/03-阶段3-Gazebo仿真与SIL\|03-阶段3-Gazebo仿真与SIL]] | ✅ 完成 |
-| **04** | 阶段 4 · 视觉（节选） | [[knowledge/robotics/04-阶段4-颜色检测与坐标变换\|04-阶段4-颜色检测与坐标变换]] | 🟡 4.1-4.3 |
-| **05** | 阶段 5 · 机器人 CI | [[knowledge/robotics/05-阶段5-机器人CI全链路\|05-阶段5-机器人CI全链路]] | ✅ 完成 |
-| **06** | 阶段 6 · 多架构交叉编译 | [[knowledge/robotics/06-阶段6-多架构交叉编译\|06-阶段6-多架构交叉编译]] | ✅ 完成 |
-| **07** | 阶段 7 · 算法与模型门禁 | [[knowledge/robotics/07-阶段7-算法与模型门禁\|07-阶段7-算法与模型门禁]] | ✅ 完成 |
-| **08** | 横向 · 车载 vs 机器人 | [[knowledge/robotics/08-机器人CI与车载CI对照\|08-机器人CI与车载CI对照]] | ✅ 完成 |
+| **00** | 入门路线（知识地图） | [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] | ✅ |
+| **01** | 环境搭建（ROS 2 + GPU） | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] | ✅ 完成 |
+| **02** | 节点通信与 TF2 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] | ✅ 完成 |
+| **03** | colcon 构建体系 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] | ✅ 完成 |
+| **04** | Gazebo 仿真与 SIL | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] | ✅ 完成 |
+| **05** | 颜色检测与坐标变换 | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] | 🟡 节选 |
+| **06** | 机器人 CI 全链路 | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] | ✅ 完成 |
+| **07** | 多架构交叉编译 | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] | ✅ 完成 |
+| **08** | 算法与模型门禁 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] | ✅ 完成 |
+| **09** | 机器人 CI vs 车载 CI | [[knowledge/robotics/09-机器人CI与车载CI对照\|09-机器人CI与车载CI对照]] | ✅ 完成 |
 
-> 未做：**阶段 4 的 4.4-4.10**（SLAM/Nav2/MoveIt，岗位无关）、**阶段 6B**（HIL，需硬件）
+> 未做：**视觉的 SLAM/Nav2/MoveIt 部分**（岗位无关）、**HIL 真机**（需硬件）
 
 ---
 
@@ -38,15 +39,16 @@
 
 | 编号 | 文档 | 说明 |
 |:--:|:-----|:-----|
-| **00** | [[knowledge/robotics/00-环境-ROS2搭建\|00-环境-ROS2搭建]] | Humble + Gazebo Fortress 从零搭建；**国内源限速定位**、rosdep 三层换源、headless 仿真 + **附录：NVIDIA 595 驱动安装与传感器复活验证** |
-| **01** | [[knowledge/robotics/01-阶段1-节点通信与TF2\|01-阶段1-节点通信与TF2]] | talker/listener 双向通信 + 参数化 + launch + 差速车 URDF + TF2 树验证 |
-| **02** | [[knowledge/robotics/02-阶段2-colcon构建体系\|02-阶段2-colcon构建体系]] | **五个构建实验**：依赖 DAG、增量传播边界、`--packages-*` 语义、overlay、merge-install；含 CI 设计四原则 |
-| **03** | [[knowledge/robotics/03-阶段3-Gazebo仿真与SIL\|03-阶段3-Gazebo仿真与SIL]] | **SIL 门禁完整实现**：Gazebo + 桥接 + 闭环控制 + JSON 断言 + 退出码；含 headless Sensors 卡死定位全过程 |
-| **04** | [[knowledge/robotics/04-阶段4-颜色检测与坐标变换\|04-阶段4-颜色检测与坐标变换]] | **视觉链路最小集**：OpenCV 颜色检测实测 (319,43)、相机内参/畸变原理、像素→世界（Y 误差 4mm） |
-| **05** | [[knowledge/robotics/05-阶段5-机器人CI全链路\|05-阶段5-机器人CI全链路]] | **镜像 + 流水线合一**：Docker 5 大坑 + Jenkins 11 个坑、构建 #18 SUCCESS 43.7s、9 阶段全跑通、SIL 误差 0.72% |
-| **06** | [[knowledge/robotics/06-阶段6-多架构交叉编译\|06-阶段6-多架构交叉编译]] | **x86 → aarch64**：arm64 sysroot 120MB / 93 包、5 大坑、QEMU 验证、13 个 ARM64 产物 |
-| **07** | [[knowledge/robotics/07-阶段7-算法与模型门禁\|07-阶段7-算法与模型门禁]] | **性能 6 项 + 精度 3 项**：ONNX 评测、真实 MNIST 基线 98.3%、阈值随样本量动态 |
-| **08** | [[knowledge/robotics/08-机器人CI与车载CI对照\|08-机器人CI与车载CI对照]] | **转行核心材料**：14 维度对照、4 个关键差异、门禁重叠 67%、三段式面试话术 |
+| **00** | [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] | 学习策略 / 硬件定位 / 开发环境 / 数学基础 / 规划边界 / GPU / 项目选择 / 常见坑 / 资源；附执行进度表 |
+| **01** | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] | Humble + Gazebo Fortress 从零搭建；**国内源限速定位**、rosdep 三层换源、headless 仿真 + **附录：NVIDIA 驱动安装与传感器复活验证** |
+| **02** | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] | talker/listener 双向通信 + 参数化 + launch + 差速车 URDF + TF2 树验证 |
+| **03** | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] | **五个构建实验**：依赖 DAG、增量传播边界、`--packages-*` 语义、overlay、merge-install；含 CI 设计四原则 |
+| **04** | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] | **SIL 门禁完整实现**：Gazebo + 桥接 + 闭环控制 + JSON 断言 + 退出码；含 headless Sensors 卡死定位全过程 |
+| **05** | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] | **视觉链路最小集**：OpenCV 颜色检测实测、相机内参/畸变原理、像素→世界坐标（Y 误差 4mm） |
+| **06** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] | **镜像 + 流水线合一**：Docker 5 大坑 + Jenkins 11 个坑、构建 SUCCESS、9 阶段全跑通、SIL 误差 0.72% |
+| **07** | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] | **x86 → aarch64**：arm64 sysroot 120MB / 93 包、5 大坑、QEMU 验证、13 个 ARM64 产物 |
+| **08** | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] | **性能 6 项 + 精度 3 项**：ONNX 评测、真实 MNIST 基线 98.3%、阈值随样本量动态 |
+| **09** | [[knowledge/robotics/09-机器人CI与车载CI对照\|09-机器人CI与车载CI对照]] | **转行核心材料**：14 维度对照、4 个关键差异、门禁重叠 67%、三段式面试话术 |
 
 ---
 
@@ -57,6 +59,9 @@
 | ROS 2 装不上 / `packages.ros.org` 卡死 | 01 §4.1 |
 | `rosdep update` 卡在 GitHub | 01 §2.4 |
 | Gazebo 在 CI 里起不来 / 无显示器 | 01 §3.4 · §5.3 |
+| `nvidia-smi` command not found | 01 附录 |
+| 装完驱动 `modprobe nvidia` 报 No such device | 01 附录 |
+| 激光雷达 / 相机话题都没有 | 01 附录 |
 | colcon 构建报错 | 01 §3.3 |
 | 命令行传 URDF 参数报错 | 02 §6.1 |
 | launch 改完不生效 | 02 §6.3 |
@@ -71,38 +76,33 @@
 | `InvalidParameterTypeException` | 04 §7.1 |
 | 新增入口点后 `StopIteration` | 04 §7.2 |
 | 仿真跑不起来但进程还在 | 04 §6.2 |
-| `nvidia-smi` command not found | 05 §1 |
-| 装完驱动 `modprobe nvidia` 报 No such device | 05 §4 |
-| 装完驱动要不要担心黑屏 | 05 §5 |
-| 激光雷达 / 相机话题都没有 | 05 §7.2 |
+| cv2 报 _ARRAY_API not found | 05 §4 坑1 |
+| TF 树缺 base_link | 05 §4 坑2 |
 | 激光数据里全是 `.inf` | 05 §8.4 |
-| Docker 构建卡在 exporting layers | 05 §1 坑1 |
-| Dockerfile 卡在 curl ros.key | 05 §1 坑2 |
-| docker pull 任何镜像都卡住 | 05 §1 坑3 |
-| 容器里 colcon 找不到 ament_cmake | 05 §1 坑4 |
-| 容器里 Gazebo 没有传感器话题 | 05 §1 坑5 |
-| Docker 磁盘占用暴涨 | 05 §5 |
-| `apt install xxx:arm64` 报 not installable | 06 §3 |
-| 交叉编译 CMake 报缺 ament 包 | 06 §4 |
-| `ModuleNotFoundError: ament_package` | 06 §5 |
-| `No 'rosidl_typesupport_c' found` | 06 §6 |
-| 链接报找不到 libpython3.10.so | 06 §7 |
-| 模型换了性能崩了没人发现 | 07 §1 |
-| 模型评测数据不稳定 | 07 §8.1 |
-| 门禁假绿（exit code 取错） | 07 §8.2 |
-| 找不到可用的 ONNX 模型 | 06 §8.3 |
-| cv2 报 _ARRAY_API not found | 04 §4 坑1 |
-| TF 树缺 base_link | 04 §4 坑2 |
-| Jenkins agent 连不上 / UnsupportedClassVersion | 07 §6 坑1-2 |
-| systemd 用户服务 216/GROUP | 07 §6 坑3 |
-| Jenkins 里 source: not found | 07 §6 坑5 |
-| Groovy 报 No such property | 07 §6 坑6 |
-| standardPipeline 说缺 colcon/ros2 | 05 §6 坑7 |
-| colcon test 报 install layout merged | 05 §6 坑8 |
-| CI 里报模型文件不存在 | 05 §6 坑9 |
-| **门禁全绿但构建 FAILURE** | 05 §6 坑10 |
-| 单类指标误判 | 05 §6 坑11 |
-| `LaserScan` 没有 `frame_id` 属性 | 05 §8.5 |
+| Docker 构建卡在 exporting layers | 06 §1 坑1 |
+| Dockerfile 卡在 curl ros.key | 06 §1 坑2 |
+| docker pull 任何镜像都卡住 | 06 §1 坑3 |
+| 容器里 colcon 找不到 ament_cmake | 06 §1 坑4 |
+| 容器里 Gazebo 没有传感器话题 | 06 §1 坑5 |
+| Docker 磁盘占用暴涨 | 06 §5 |
+| `apt install xxx:arm64` 报 not installable | 07 §3 |
+| 交叉编译 CMake 报缺 ament 包 | 07 §4 |
+| `ModuleNotFoundError: ament_package` | 07 §5 |
+| `No 'rosidl_typesupport_c' found` | 07 §6 |
+| 链接报找不到 libpython3.10.so | 07 §7 |
+| 模型换了性能崩了没人发现 | 08 §1 |
+| 模型评测数据不稳定 | 08 §8.1 |
+| 门禁假绿（exit code 取错） | 08 §8.2 |
+| Jenkins agent 连不上 / UnsupportedClassVersion | 08 §6 坑1-2 |
+| systemd 用户服务 216/GROUP | 08 §6 坑3 |
+| Jenkins 里 source: not found | 08 §6 坑5 |
+| Groovy 报 No such property | 08 §6 坑6 |
+| standardPipeline 说缺 colcon/ros2 | 06 §6 坑7 |
+| colcon test 报 install layout merged | 06 §6 坑8 |
+| CI 里报模型文件不存在 | 06 §6 坑9 |
+| **门禁全绿但构建 FAILURE** | 06 §6 坑10 |
+| 单类指标误判 | 06 §6 坑11 |
+| `LaserScan` 没有 `frame_id` 属性 | 06 §8.5 |
 
 ---
 
@@ -111,7 +111,7 @@
 ### 环境层（01）
 
 1. **Gazebo 与 ROS distro 强绑定**：Ubuntu 22.04 → Humble → Fortress，混装必然出问题
-2. **三个网络坑**：apt 源、rosdep sources、rosdistro index（最后一个硬编码在 Python 源码里，只能靠 `ROSDISTRO_INDEX_URL`）
+2. **三个网络坑**：apt 源、rosdep sources、rosdistro index（最后一个硬编码在 Python 源码里，只能靠 `ROS_DISTRO_INDEX_URL`）
 3. **CI 里只装 `ros-base`**，不装 `desktop`（GUI 依赖全是浪费）
 4. **DDS 中间件必须显式固定** `RMW_IMPLEMENTATION`，本地单机看不出，装进容器就暴露
 
@@ -133,17 +133,15 @@
 
 1. **Gazebo 与 ROS 2 是两套通信系统**，`ros_gz_bridge` 是唯一桥梁，没它两边都是瞎子
 2. **`/clock` 必须桥**：不桥则所有定时器用墙上时间，超时判断全乱
-3. **headless ≠ 不需要渲染**：`ogre2` 在无 GPU 驱动时会静默阻塞。**但先查 `nvidia-smi`**——有显卡却没装驱动才是真因（见 05）；确实无 GPU 时才降级用 `ray`（CPU）替代 `gpu_ray`
+3. **headless ≠ 不需要渲染**：`ogre2` 在无 GPU 驱动时会静默阻塞。**但先查 `nvidia-smi`**——有显卡却没装驱动才是真因（见 01）；确实无 GPU 时才降级用 `ray`（CPU）替代 `gpu_ray`
 4. **SIL 门禁必须三维断言**：是否到达 + 精度 + 耗时，只看"动没动"等于没测
 5. **JSON + 退出码**才是门禁，纯文本日志只能算 demo
 
-### GPU 与传感器层（05）
+### 视觉层（05）
 
-1. **Gazebo GPU 传感器依赖真实显卡驱动**：nouveau 会说"能跑"，但 Sensors 插件静默卡死
-2. **装完驱动必须重启**：nouveau 占着设备，无法热切换
-3. **重启前四步加固**：黑名单 / modeset=1 / initramfs 加模块 / 清 Xorg 配置
-4. **激光数据 178/360 有效是正常的**：其余方向无障碍返回 `.inf`，解析必须过滤
-5. **CI 前置能力探测**：2 秒探测比 30 分钟超时好
+1. **像素→世界坐标必须走 TF2**：相机内参只能到相机系，再往下要靠 `tf2_ros` 查 `base_link`
+2. **畸变校正在标定时就完成**：`camera_info` 里带 D 系数，直接套 `undistort` 比手算稳
+3. **opencv 与 numpy 版本强绑定**：`_ARRAY_API not found` 一般是 numpy 2.x + 老 cv2
 
 ### 容器层（06）
 
@@ -154,7 +152,7 @@
 5. **Ignition Transport 有分区隔离**：所有组件必须在同一容器内
 6. **Dockerfile 是唯一可信源**：不存 tar 包，避免版本漂移；只在搬机器时临时导出
 
-### 多架构层（06）
+### 多架构层（07）
 
 1. **交叉编译的难点在 sysroot，不在编译器**：装工具链 1 分钟，凑 sysroot 3 小时
 2. **`Architecture: all` 包没有 `:arm64` 变体**：Debian 多架构的硬限制，必须用 `apt-get download` 绕过
@@ -163,7 +161,7 @@
 5. **`AMENT_PREFIX_PATH` 决定 typesupport 能否被找到**
 6. **QEMU 能让 x86 跑 ARM 二进制**：验证产物正确性的最低成本方式
 
-### 算法层（07）
+### 算法层（08）
 
 1. **模型门禁的判据必须是相对基线**：绝对数值跨机器不可比
 2. **P95 比 mean 更重要**：机器人怕的是偶发卡顿，不是平均慢
