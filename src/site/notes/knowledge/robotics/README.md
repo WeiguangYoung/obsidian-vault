@@ -1,0 +1,190 @@
+---
+{"dg-publish":true,"permalink":"/knowledge/robotics/README/","title":"机器人实现 导航","tags":["导航","索引","机器人","ROS2"],"dg-note-properties":{"title":"机器人实现 导航","tags":["导航","索引","机器人","ROS2"]}}
+---
+
+
+# 🤖 机器人实现 · 目录导航
+
+> 机器人方向的学习与实践记录：学习清单 → 环境搭建 → 节点通信 → colcon 构建 → 仿真与 SIL → 视觉 → 机器人 CI → 多架构 → 算法门禁 → 横向对照。
+> 目标是补齐「机器人 CI 构建 / 系统集成」岗位的能力缺口。
+>
+> 路线规划见 [[knowledge/robotics/00-机器人入门路线\|📋 机器人入门路线]] ｜ 行业背景见 [[knowledge/devops/industry/02-机器人行业专题\|🏭 机器人行业专题]]
+
+返回 [[首页\|🏠 首页]]
+
+---
+
+## 📊 目录概览
+
+> **编号规则**：00 是学习清单（总纲），01 起按学习路径顺序排，横向对照放最后。
+
+| 编号 | 主题 | 文档 | 状态 |
+|:--:|:--|:--|:--|
+| **00** | 入门路线（知识地图） | [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] | ✅ |
+| **01** | 环境搭建（ROS 2 + GPU） | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] | ✅ 完成 |
+| **02** | 节点通信与 TF2 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] | ✅ 完成 |
+| **03** | colcon 构建体系 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] | ✅ 完成 |
+| **04** | Gazebo 仿真与 SIL | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] | ✅ 完成 |
+| **05** | 颜色检测与坐标变换 | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] | 🟡 节选 |
+| **06** | 机器人 CI 全链路 | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] | ✅ 完成 |
+| **07** | 多架构交叉编译 | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] | ✅ 完成 |
+| **08** | 算法与模型门禁 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] | ✅ 完成 |
+| **09** | 机器人 CI vs 车载 CI | [[knowledge/robotics/09-机器人CI与车载CI对照\|09-机器人CI与车载CI对照]] | ✅ 完成 |
+
+> 未做：**视觉的 SLAM/Nav2/MoveIt 部分**（岗位无关）、**HIL 真机**（需硬件）
+
+---
+
+## 文档索引
+
+| 编号 | 文档 | 说明 |
+|:--:|:-----|:-----|
+| **00** | [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] | 学习策略 / 硬件定位 / 开发环境 / 数学基础 / 规划边界 / GPU / 项目选择 / 常见坑 / 资源；附执行进度表 |
+| **01** | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] | Humble + Gazebo Fortress 从零搭建；**国内源限速定位**、rosdep 三层换源、headless 仿真 + **附录：NVIDIA 驱动安装与传感器复活验证** |
+| **02** | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] | talker/listener 双向通信 + 参数化 + launch + 差速车 URDF + TF2 树验证 |
+| **03** | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] | **五个构建实验**：依赖 DAG、增量传播边界、`--packages-*` 语义、overlay、merge-install；含 CI 设计四原则 |
+| **04** | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] | **SIL 门禁完整实现**：Gazebo + 桥接 + 闭环控制 + JSON 断言 + 退出码；含 headless Sensors 卡死定位全过程 |
+| **05** | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] | **视觉链路最小集**：OpenCV 颜色检测实测、相机内参/畸变原理、像素→世界坐标（Y 误差 4mm） |
+| **06** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] | **镜像 + 流水线合一**：Docker 5 大坑 + Jenkins 11 个坑、构建 SUCCESS、9 阶段全跑通、SIL 误差 0.72% |
+| **07** | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] | **x86 → aarch64**：arm64 sysroot 120MB / 93 包、5 大坑、QEMU 验证、13 个 ARM64 产物 |
+| **08** | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] | **性能 6 项 + 精度 3 项**：ONNX 评测、真实 MNIST 基线 98.3%、阈值随样本量动态 |
+| **09** | [[knowledge/robotics/09-机器人CI与车载CI对照\|09-机器人CI与车载CI对照]] | **转行核心材料**：14 维度对照、4 个关键差异、门禁重叠 67%、三段式面试话术 |
+
+---
+
+## 🔍 按症状找文档
+
+| 症状 | 去哪查 |
+|:--|:--|
+| ROS 2 装不上 / `packages.ros.org` 卡死 | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §4.1 |
+| `rosdep update` 卡在 GitHub | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §2.4 |
+| Gazebo 在 CI 里起不来 / 无显示器 | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §3.4 · §5.3 |
+| colcon 构建报错（环境层） | [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §3.3 |
+| 命令行传 URDF 参数报错 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §6.1 |
+| launch 改完不生效 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §6.3 |
+| TF 树缺 `base_footprint` | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §5.1 |
+| 参数改了不生效 / 多配置跑流水线 | [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] §3 |
+| 改一个包结果重编一堆 / 只跑影响面 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §3 · §4 |
+| 明明编译了但运行还是旧代码 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §5 |
+| CMake 缓存污染 / 改了依赖没用 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §7.1 |
+| CI 里环境变量太长 / 镜像太大 | [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] §6 |
+| Gazebo headless 卡死不响应 | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §6 |
+| `ros_gz_bridge` 配了但没话题 | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §4 |
+| `InvalidParameterTypeException` | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §7.1 |
+| 新增入口点后 `StopIteration` | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §7.2 |
+| 仿真跑不起来但进程还在 | [[knowledge/robotics/04-Gazebo仿真与SIL\|04-Gazebo仿真与SIL]] §6.2 |
+| cv2 报 `_ARRAY_API not found` | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] §4 坑1 |
+| TF 树缺 `base_link` | [[knowledge/robotics/05-颜色检测与坐标变换\|05-颜色检测与坐标变换]] §4 坑2 |
+| **Docker 构建卡在 exporting layers** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑1 |
+| **Dockerfile 卡在 curl ros.key** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑2 |
+| **docker pull 任何镜像都卡住** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑3 |
+| **容器里 colcon 找不到 ament_cmake** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑4 |
+| **容器里 Gazebo 没有传感器话题** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §1 坑5 |
+| **Docker 磁盘占用暴涨** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §5 |
+| **Jenkins agent 连不上 / UnsupportedClassVersion** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑1-2 |
+| **systemd 用户服务 216/GROUP** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑3 |
+| **Jenkins 里 `source: not found`** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑5 |
+| **Groovy 报 `No such property`** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑6 |
+| **standardPipeline 说缺 colcon/ros2** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑7 |
+| **colcon test 报 install layout merged** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑8 |
+| **CI 里报模型文件不存在** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑9 |
+| **门禁全绿但构建 FAILURE** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑10 |
+| **单类指标误判** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] §6 坑11 |
+| `apt install xxx:arm64` 报 not installable | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §3 |
+| 交叉编译 CMake 报缺 ament 包 | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §4 |
+| `ModuleNotFoundError: ament_package` | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §5 |
+| `No 'rosidl_typesupport_c' found` | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §6 |
+| 链接报找不到 libpython3.10.so | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] §7 |
+| 模型换了性能崩了没人发现 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §1 |
+| 模型评测数据不稳定 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.1 |
+| 门禁假绿（exit code 取错） | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.2 |
+| 激光数据里全是 `.inf` | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.4 |
+| `LaserScan` 没有 `frame_id` 属性 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] §8.5 |
+---
+
+## 🎯 已固化的关键认知
+
+### 环境层（01）
+
+1. **Gazebo 与 ROS distro 强绑定**：Ubuntu 22.04 → Humble → Fortress，混装必然出问题
+2. **三个网络坑**：apt 源、rosdep sources、rosdistro index（最后一个硬编码在 Python 源码里，只能靠 `ROS_DISTRO_INDEX_URL`）
+3. **CI 里只装 `ros-base`**，不装 `desktop`（GUI 依赖全是浪费）
+4. **DDS 中间件必须显式固定** `RMW_IMPLEMENTATION`，本地单机看不出，装进容器就暴露
+
+### 通信层（02）
+
+1. **参数优先于硬编码**：所有可变项必须 `declare_parameter`，否则进 CI 改不动
+2. **`base_footprint` 不能省**：它是 TF 树的根，缺了 SLAM/Nav2 全断
+3. **launch 改完必须重 build**：CI 里这是「假绿」的典型来源
+4. **`continuous` vs `revolute`**：车轮必须 continuous，用错 Gazebo 里会卡住
+
+### 构建层（03）
+
+1. **改接口 ≠ 改实现**：接口变更只触发下游重新链接（0.10s），实现变更才重编（2.74s）——**缓存要分两档设计**
+2. **`--packages-above` 是影响面工具**，比 `select` 和 `up-to` 值钱，对应车载的"部件粒度增量"
+3. **overlay 是开发期便利，部署期是风险**：CI 镜像只 source 一个工作区
+4. **CI 用 `--merge-install`**：短 AMENT_PREFIX_PATH + 更少镜像层
+
+### 仿真层（04）
+
+1. **Gazebo 与 ROS 2 是两套通信系统**，`ros_gz_bridge` 是唯一桥梁，没它两边都是瞎子
+2. **`/clock` 必须桥**：不桥则所有定时器用墙上时间，超时判断全乱
+3. **headless ≠ 不需要渲染**：`ogre2` 在无 GPU 驱动时会静默阻塞。**但先查 `nvidia-smi`**——有显卡却没装驱动才是真因（见 01）；确实无 GPU 时才降级用 `ray`（CPU）替代 `gpu_ray`
+4. **SIL 门禁必须三维断言**：是否到达 + 精度 + 耗时，只看"动没动"等于没测
+5. **JSON + 退出码**才是门禁，纯文本日志只能算 demo
+
+### 视觉层（05）
+
+1. **像素→世界坐标必须走 TF2**：相机内参只能到相机系，再往下要靠 `tf2_ros` 查 `base_link`
+2. **畸变校正在标定时就完成**：`camera_info` 里带 D 系数，直接套 `undistort` 比手算稳
+3. **opencv 与 numpy 版本强绑定**：`_ARRAY_API not found` 一般是 numpy 2.x + 老 cv2
+
+### 容器层（06）
+
+1. **Docker 29 + buildkit 会假死**：长构建一律 `DOCKER_BUILDKIT=0`
+2. **镜像加速器不代理认证**：`auth.docker.io` 不通就彻底拉不动，只能自建 registry
+3. **ROS 密钥要从国内镜像拿**：USTC 可用，TUNA 的 ros.asc 是 404
+4. **容器里 colcon 找不到 ament**：`--entrypoint` 覆盖导致没 source
+5. **Ignition Transport 有分区隔离**：所有组件必须在同一容器内
+6. **Dockerfile 是唯一可信源**：不存 tar 包，避免版本漂移；只在搬机器时临时导出
+
+### 多架构层（07）
+
+1. **交叉编译的难点在 sysroot，不在编译器**：装工具链 1 分钟，凑 sysroot 3 小时
+2. **`Architecture: all` 包没有 `:arm64` 变体**：Debian 多架构的硬限制，必须用 `apt-get download` 绕过
+3. **ROS 依赖链 93 个包**：不递归解析会一直缺东西
+4. **ament 假设本机能 import ament_package**：sysroot 的 Python 包要加 PYTHONPATH
+5. **`AMENT_PREFIX_PATH` 决定 typesupport 能否被找到**
+6. **QEMU 能让 x86 跑 ARM 二进制**：验证产物正确性的最低成本方式
+
+### 算法层（08）
+
+1. **模型门禁的判据必须是相对基线**：绝对数值跨机器不可比
+2. **P95 比 mean 更重要**：机器人怕的是偶发卡顿，不是平均慢
+3. **签名检查是最后防线**：「更快更小」不代表「是同一个模型」
+4. **不预热会污染数据**：第一次推理慢 10 倍
+5. **门禁必须测失败路径**：不测阻断的阻断器等于没有
+
+---
+
+## 💡 可以作为「机器人 CI 门禁」的独有点
+
+普通 CI 只查「编译过没过」，机器人 CI 还能查这些——**这是车载 CI 经验平移过来的最大价值**：
+
+| 门禁项 | 查什么 | 为什么重要 |
+|:--|:--|:--|
+| **URDF 合法性** | `check_urdf` | 能编译但模型加载失败 |
+| **TF 树完整性** | `base_footprint` 是否存在、链路是否连通 | 能编译但 SLAM/Nav2 全断 |
+| **参数可配置性** | 硬编码扫描 | 同一流水线跑不了多配置 |
+| **launch 产物新鲜度** | 构建 hash 校验 | 假绿：跑了旧版本 |
+| **接口变更影响面** | `--packages-above` 求闭包 | 只跑全量太慢，只跑自己漏测 |
+| **包名冲突检测** | merge-install 下重名扫描 | 同名可执行文件静默覆盖 |
+| **SIL 闭环回归** | 仿真 + 断言 + JSON | 机器人独有的「集成测试」 |
+| **仿真环境能力探测** | GPU/EGL 可用性预检 | 防止 CI 卡死整晚 |
+| **传感器话题存活检查** | `/scan` `/camera` 频率探测 | 传感器静默失效最难发现 |
+| **世界就绪轮询** | 不用固定 sleep | 慢机器上固定等待必失败 |
+| **镜像可复现性** | 镜像 digest 固定 | 避免「昨天能跑今天不行」 |
+| **多架构产物检查** | `readelf -h` 验证 Machine | 防止误发 x86 制品给 ARM 板 |
+| **sysroot 完整性** | 依赖闭包校验 | 缺包时编译失败而非运行时崩 |
+| **模型性能回归** | 延迟/P95/吞吐 vs baseline | 代码没改也可能变差 |
+| **模型接口签名** | 输入输出 shape 校验 | 换了模型下游会崩 |

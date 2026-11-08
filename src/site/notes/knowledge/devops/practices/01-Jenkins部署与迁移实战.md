@@ -8,7 +8,7 @@
 > 一条完整主线：**先把 Jenkins 装起来（Master + 三种 Agent）→ 再把它迁进 k3s 集群**。
 > 第一部分是已落地的部署实录，第二部分是迁移方案（含前置决策、资源清单、回滚预案）。
 
-返回 [[knowledge/devops/practices/00-索引\|🛠️ 实战演练]]
+返回 [[knowledge/devops/practices/README\|🛠️ 实战演练]]
 
 ---
 

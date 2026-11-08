@@ -8,7 +8,7 @@
 > Java 生态的绝对主流。和 Flask/Gin 的「轻量框架」思路不同，Spring 是**全家桶**：IoC 容器、AOP、数据访问、Web、安全、微服务一应俱全。
 > Spring Boot 的价值在于——把这些能力**开箱即用地组装好**，让你不用再写一堆 XML 配置。
 
-返回 [[knowledge/language/backend/00-索引\|🌐 后端开发]]
+返回 [[knowledge/language/backend/README\|🌐 后端开发]]
 
 ---
 
