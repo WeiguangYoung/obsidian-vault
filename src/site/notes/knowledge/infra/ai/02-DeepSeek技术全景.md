@@ -1,12 +1,12 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/infra/ai/02-DeepSeek技术全景/","title":"DeepSeek 技术架构全景","tags":["DeepSeek","大模型","MoE","MoE架构","推理引擎","Agent","DeepInfer","Harness"],"dg-note-properties":{"category":"AI / 大模型","title":"DeepSeek 技术架构全景","date":"2026-11-01","tags":["DeepSeek","大模型","MoE","MoE架构","推理引擎","Agent","DeepInfer","Harness"]}}
+{"dg-publish":true,"permalink":"/knowledge/infra/ai/02-DeepSeek技术全景/","title":"DeepSeek 技术架构全景","tags":["DeepSeek","大模型","MoE","MoE架构","推理引擎","Agent","DeepInfer","DeepSeek Harness"],"dg-note-properties":{"category":"AI / 大模型","title":"DeepSeek 技术架构全景","date":"2026-11-01","tags":["DeepSeek","大模型","MoE","MoE架构","推理引擎","Agent","DeepInfer","DeepSeek Harness"]}}
 ---
 
 
 # DeepSeek 技术架构全景
 
 > 从「模型」到「引擎」再到「Agent」，DeepSeek 已经是三层全栈：
-> **DeepSeek-V4.1-Flash（模型）→ DeepInfer（推理引擎）→ DeepSeek Harness / dsh-superagent（Agent 框架）**。
+> **DeepSeek-V4.1-Flash（模型）→ DeepInfer（推理引擎）→ DeepSeek Harness（Agent 框架）**。
 > 本篇是总纲，单点深入看各节对应的文档。
 
 ## 一、三层栈全景
@@ -14,7 +14,6 @@
 ```
 ┌─────────────────────────────────────────────┐
 │  Agent 层   DeepSeek Harness                  │
-│             └─ dsh-superagent-prototype       │
 ├─────────────────────────────────────────────┤
 │  引擎层     DeepInfer（推理服务）              │
 │             算子: FlashMLA / DeepGEMM / DeepEP│
@@ -92,38 +91,22 @@
 | 单卡解码峰值 | 26,000 token/s |
 | 第三方对比（GPUStack，8 卡） | 吞吐比 vLLM **+25.2%**，首字延迟约为 vLLM 2 倍 |
 
-## 四、Agent 层：DeepSeek Harness 与 dsh-superagent-prototype
+## 四、Agent 层：DeepSeek Harness
 
-> 详见本篇「四、Agent 层」
+> 详细内容见「附三、DeepSeek Harness 详解」。
 
-### 4.1 要解决的问题
+### 4.1 定位
 
-> **「AI 越能干，人为什么反而越忙？」**
+**DeepSeek Harness**（`deepseek-harness`）是 DeepSeek 开源的**通用 agent harness**，架构理念 **"Everything is a Plugin"**，构建在 [Cordis](https://github.com/cordiverse/cordis) 之上。
 
-单 session 的 Agent 本质是「等指令的执行工具」，人成了瓶颈。Super-agent 的目标是反过来：
-**Agent 常驻在线、多任务并行、主动推进、只在需要决策时打扰人。**
+### 4.2 要点速览
 
-### 4.2 架构要点
+- **npx 一条命令启动**：`npx @deepseek-ai/dsh web` → Web UI 跑在 `127.0.0.1:3080`
+- **8 种 entry mode**：web / headless / acp / sdk / sdk-minimal / tui / 自定义 profile / plugin 管理
+- **profile 机制**：插件 bundle 有序叠加，配置放 `$DSH_HOME/profiles/<name>`
+- **核心概念**：Everything is a Plugin —— 连 Web UI、CLI、SDK 本身就是 profile
 
-| 设计 | 说明 |
-|:----|:----|
-| **Router + Worker 双层** | Router 常驻维持连续性 + 事件过滤路由；Worker 动态起停执行任务 |
-| **两级事件过滤** | 确定性规则（Fast Path）→ 大模型语义判断（Slow Path），省 token |
-| **Inline & Spill** | 上下文窗口当 Cache 管，热数据内联、冷数据落盘 |
-| **链式召回** | 靠 ID 引用图按需检索历史，而不是全塞进上下文 |
-| **异步全双工** | 后台耗时任务不阻塞前台，新指令随时进入 |
-| **存算分离（BYOM）** | 云端大脑 + 本地轻量 daemon，可跨设备访问本地环境 |
-| **外部 Watchdog** | 独立进程监控主系统，可用自然语言查故障、热改规则 |
-
-### 4.3 实验数据
-
-| 指标 | Super-agent | 单 Session + Subagent |
-|:----|:----|:----|
-| 任务完成 p50 | **12.4 min** | 更慢且不稳定 |
-| 任务完成 p95 | **15.7 min** | 29.5 min |
-| Router 单决定耗时 | 1.6s（批处理后） | 6.4s |
-
-> 官方定性：**研究代码，不是生产级软件**。Executor 以 OS 用户身份执行命令，目录限制 ≠ 安全隔离。
+---
 
 ## 五、三层之间的关系（这是重点）
 
@@ -144,8 +127,8 @@
 |:----|:----|
 | **V4.1-Flash 架构** | 非对称激活、KV cache 压缩、MoE 专家并行 —— 面试常问「大模型推理为什么贵」 |
 | **DeepInfer** | 推理服务的部署形态、PD 分离、KV Cache 管理、昇腾适配 |
-| **Harness / SuperAgent** | Agent 系统架构、事件驱动、上下文管理、自愈机制 |
-| **GPU 集群管理** | 结合 [[knowledge/infra/ai/01-GPU集群管理\|GPU 集群管理]]，讲调度与显存优化 |
+| **DeepSeek Harness** | 插件化 agent 底座（TypeScript/Cordis）、profile 机制、8 种 entry mode |
+| **推理加速与部署** | 结合 [[knowledge/infra/ai/01-模型推理加速与部署\|模型推理加速与部署]]，讲调度与显存优化 |
 
 > 一句话包装：**「我不只会部署模型，我理解模型结构如何决定推理成本和调度策略」** —— 这是 AI 平台岗最稀缺的能力。
 
@@ -422,220 +405,141 @@ PD 分离：
 | **容量规划** | 155 万亿 token/天 这种量级，靠的是 PD 分离 + 批处理 |
 | **国产替代** | 昇腾 950 的 CANN 9.2 适配，是当前国产 AI 基建的关键拼图 |
 
-> 结合 [[knowledge/infra/ai/01-GPU集群管理\|GPU 集群管理]] 一起看：驱动 → CUDA/CANN → 算子库 → 推理引擎，四层栈的第四层就是它。
+> 结合 [[knowledge/infra/ai/01-模型推理加速与部署\|模型推理加速与部署]] 一起看：驱动 → CUDA/CANN → 算子库 → 推理引擎，四层栈的第四层就是它。
 
 ### 十、一句话总结
 
 > **DeepInfer = vLLM 的壳 + DeepSeek 自研算子 + V4.1-Flash 定制**，
 > 开源了「算得快」，没开源「服务得好」；硬件门槛把绝大多数人挡在门外，昇腾 950 支持是最大增量。
 
-## 附三、DeepSeek Harness 与 SuperAgent 详解
+## 附三、DeepSeek Harness（`deepseek-harness`）详解
 
-> `dsh-superagent-prototype` = **D**eep**S**eek **H**arness 团队开源的超级 Agent 研究原型。
-> 它回答一个很扎心的问题：**「AI 越能干，人为什么反而越忙？」**
+> 2026-11-09 核查官方仓库与文档。
 
 ### 一、基本档案
 
 | 项 | 内容 |
-|:----|:----|
-| 项目名 | `dsh-superagent-prototype` |
-| 团队 | DeepSeek Harness |
-| 开源时间 | 2026-10-31（研究原型） |
-| 许可证 | **MIT** |
-| 仓库 | `github.com/deepseek-ai/dsh-superagent-prototype` |
-| 定位 | **研究代码，不是生产级软件** |
-| 场景 | 软件开发（GitHub + 可选飞书集成） |
+|:--|:--|
+| 仓库 | `github.com/deepseek-ai/deepseek-harness` |
+| 定位 | 开源 **agent harness**，架构理念 **"Everything is a Plugin"** |
+| 底座 | [Cordis](https://github.com/cordiverse/cordis)，设计见论文 arXiv:2608.25512 |
+| 语言 | TypeScript |
+| 许可 | MIT |
+| Stars | 约 **277,000** |
+| 创建 | 2026-08-13（持续活跃，最后推送 2026-11-04） |
+| 官网 | `deepseek.com/harness` |
+| 文档站 | `deepseek-harness.github.io/deepseek-harness/` |
+| 状态 | **developer preview**，官方明示 **会有破坏兼容的变更** |
+| 应用载体 | `cli` · `web` · `desktop` · `desktop-host` · `plugin-market-generator` |
 
-> 官方 README 原话：*"This code grew out of our team's day-to-day development work, with much of the engineering done by coding agents. Treat it as research code, not production-ready software."*
-> 有意思的是 —— **这个项目本身大量代码就是 coding agent 写的**。
+### 二、安装形式
 
-### 二、要解决的问题
-
-#### 2.1 现状：人成了瓶颈
-
-```
-传统 Agent 用法：
-  人下指令 → Agent 干活 → 人验收 → 人再下指令 → ...
-  
-  问题：
-  · Agent 只在你发消息时工作
-  · 长任务跑起来你就得等着
-  · 多个任务混在一个 session 里互相污染
-  · 人变成了「调度器 + 验收员 + 复读机」
-```
-
-#### 2.2 目标：反过来
-
-| 传统 Agent | Super-agent |
-|:----|:----|
-| 被调用才动 | **7×24 常驻在线** |
-| 单任务串行 | **多任务并行互不干扰** |
-| 被动等指令 | **观察事件，主动推进** |
-| 频繁打扰 | **只在需要决策/验收时介入** |
-
-### 三、架构：Router + Worker 双层
-
-```
-        ┌──────────────────────────────────────┐
-        │  Router（常驻进程，只有一个）           │
-        │  · 维持全局连续性                      │
-        │  · 事件过滤 → 路由分发                 │
-        └───────────┬──────────────────────────┘
-                    │ 分派任务
-     ┌──────────────┼──────────────┐
-     ▼              ▼              ▼
- ┌────────┐   ┌────────┐   ┌────────┐
- │Worker A│   │Worker B│   │Worker C│   动态起停，互不干扰
- └────────┘   └────────┘   └────────┘
-   Session      Session      Session
-```
-
-| 层 | 职责 | 生命周期 |
-|:----|:----|:----|
-| **Router** | 全局连续性、事件过滤、任务路由、决定「要不要打扰人」 | 常驻 |
-| **Worker** | 专注执行单个任务 | 按需创建销毁 |
-
-**为什么这么分**：Router 便宜（调用频繁但决策简单），Worker 贵（上下文长但任务单一）。
-把「判断」和「执行」拆开，是**成本与并发的双重优化**。
-
-### 四、五个关键设计
-
-#### 4.1 两级事件过滤（省 token 的关键）
-
-事件源源不断（新 commit、新 issue、新消息…），不可能每个都喂给大模型。
-
-```
-事件 ──► [Fast Path: 确定性规则]  ──► 能判的直接判（正则/关键词/白名单）
-                  │
-                  └─► 判不了的 ──► [Slow Path: 大模型语义判断] ──► 决定处理/忽略
-```
-
-**收益**：绝大部分噪音在 Fast Path 就被丢掉，**只有真正需要语义判断的才烧 token**。
-
-#### 4.2 Inline & Spill：把上下文当 Cache 管
-
-借鉴 CPU 缓存层级思想：
-
-| 层级 | 内容 | 特点 |
-|:----|:----|:----|
-| **Inline** | 当前任务最热的信息，内联在 prompt 里 | 快，但占上下文 |
-| **Spill** | 冷数据落盘 | 省上下文，需要时再召回 |
-
-**上下文窗口不再是「能用完就用完」，而是像内存一样被分级管理。**
-
-#### 4.3 链式召回
-
-不把历史全塞进上下文，而是**存成 ID 引用图**，需要哪个查哪个。
-
-> 类比：不是把整本书读进脑子，而是记住目录，按需翻页。
-
-#### 4.4 异步全双工交互
-
-- 后台耗时操作**不阻塞前台**
-- 用户随时可以插入新指令
-- Router 继续处理其他事件
-
-传统 Chat 是「半双工」：你发完等它答完才能发下一句。
-
-#### 4.5 存算分离（BYOM：Bring Your Own Machine）
-
-```
-   云端「大脑」（Router + LLM 推理）
-              │
-              ▼
-   本地轻量 daemon（能访问你的代码、本地环境、内网）
-```
-
-**为什么需要**：Agent 的智商在云端，但**环境在本地**（私有仓库、内网服务、本地工具链）。
-拆开后，云端不用碰你的代码，本地 daemon 只负责执行。
-
-#### 4.6 外部 Watchdog（自愈）
-
-独立进程监控主系统：
-
-- 主系统卡死 → Watchdog 发现
-- 可用**自然语言查询故障**（「现在卡在哪一步？」）
-- 可**热修改规则**（「以后这类任务别自动处理」）
-
-> 这是把「可观测性」做进了 Agent 架构层，而不是事后加监控。
-
-### 五、实验数据
-
-| 指标 | Super-agent | 单 Session + Subagent |
-|:----|:----|:----|
-| 任务完成 **p50** | **12.4 min** | 更慢且不稳定 |
-| 任务完成 **p95** | **15.7 min** | **29.5 min** |
-| Router 单次决策耗时 | **1.6 s**（批处理后） | 6.4 s（未批处理） |
-
-**关键看 p95**：单 session 方案的尾延迟是 Super-agent 的**近 2 倍**，说明并行与隔离确实解决了「任务互相拖累」的问题。
-
-### 六、文档结构（官方建议阅读顺序）
-
-```
-docs/
-├── 000-philosophy.md      # 设计哲学
-├── 001-domain-model.md    # 领域模型
-├── 002-authorization.md   # 授权机制
-├── 003-execution.md       # 执行机制
-├── 004-prompts.md         # 提示词设计
-├── 005-panel.md           # 监控面板
-├── 006-deployment.md      # 部署指南
-├── 007-architecture.md    # 架构详解
-└── 008-cookbook.md        # 扩展指南（如添加新 Source）
-```
-
-### 七、安全提醒（重要）
-
-| 风险 | 说明 |
-|:----|:----|
-| **以 OS 用户身份执行命令** | Executor session 直接跑 shell，权限=你的账号权限 |
-| **工作目录限制 ≠ 安全隔离** | 只是「默认在这干活」，不是沙箱 |
-| 官方建议 | **不要直接在敏感生产环境部署** |
-
-> 这是研究原型的典型取舍：**能力优先，隔离靠自觉**。
-> 真要上生产，得自己加容器隔离、权限收敛、审批环节。
-
-### 八、快速开始
+**方式一：npx（推荐，只需 Node.js）**
 
 ```bash
-git clone https://github.com/deepseek-ai/dsh-superagent-prototype
-cd dsh-superagent-prototype
-
-# 官方推荐方式：让你的 coding agent 读 SETUP.md 一步步带你配
-cat SETUP.md
+npx @deepseek-ai/dsh web
 ```
 
-### 九、和现有 Agent 框架的对比
+- 默认在 `http://127.0.0.1:3080` 起 Web UI 并自动打开浏览器
+- `--no-open`：只起服务不开浏览器（SSH 场景用）
+- `--port 8080`：换端口（属于 web app 的参数，不是 launcher 的）
 
-| | Super-agent | LangGraph | OpenHands | AutoGPT |
-|:----|:----|:----|:----|:----|
-| 常驻在线 | ✅ 核心设计 | ⚠️ 需自建 | ❌ | ❌ |
-| 多任务并行 | ✅ Router+Worker | ⚠️ 图结构复杂 | ❌ 单任务 | ❌ |
-| 事件驱动 | ✅ 两级过滤 | ⚠️ | ❌ | ❌ |
-| 存算分离 | ✅ BYOM | ❌ | ⚠️ | ❌ |
-| 生产可用 | ❌ 原型 | ✅ | ⚠️ | ❌ |
+**方式二：源码**
 
-> **LangGraph 是「用图编排流程」，Super-agent 是「用事件驱动调度 Agent」** —— 思路不同，
-> 前者确定性更强，后者更接近「真正在替你值班的同事」。
+```bash
+git clone https://github.com/deepseek-ai/deepseek-harness.git
+cd deepseek-harness
+pnpm install
+pnpm run build      # 产出构建物
+pnpm dsh web        # 用构建物启动，不重新编译
+```
 
-### 十、对平台/基础设施岗的启发
+> 开发模式：`pnpm run dev:web`（构建 + 起服务 + 监听源码改动自动重建）。
 
-| 设计思想 | 迁移到 DevOps 场景 |
-|:----|:----|
-| **Router + Worker** | 对应「调度器 + 执行器」，和 CI 的 controller/agent 同构 |
-| **两级事件过滤** | 对应告警降噪：规则先过滤，语义再判断 |
-| **Inline & Spill** | 对应日志热冷分层存储 |
-| **存算分离** | 对应「控制面在云端，数据面在本地」 |
-| **外部 Watchdog** | 对应 sidecar 健康检查 + 自愈 |
+**方式三：Python SDK / 桌面端**
+Python runtime wheel 打包同一个 `dsh` 命令；桌面端是 Electron 载体，有自己的 `desktop` profile。
 
-> 这套架构本质是**把计算机系统的经典工程思想搬进 Agent 设计** ——
-> 对做基础设施的人来说，读它的收获可能比读纯 AI 论文更大。
+### 三、使用形式：8 种 entry mode
 
-### 十一、一句话总结
+`dsh` 是**唯一受支持的 Node 应用启动器**。SDK 与 ACP 都是 profile，不是独立的 bin。
 
-> **Router 常驻管全局，Worker 动态干具体活；事件两级过滤省 token，上下文按 Cache 管理，Watchdog 兜底自愈。**
-> 研究代码，别上生产；但架构思想值得抄。
+| 命令 | 用途 |
+|:--|:--|
+| `dsh web` | 启动 Web profile（图形界面） |
+| `dsh --profile headless "job"` | 跑一个全新持久会话，打印最终答案后退出 |
+| `dsh --profile acp` | 通过 ACP stdio 服务自动化客户端，直到断开 |
+| `dsh --profile sdk` | 通过 JSON-RPC stdio 服务 SDK 客户端 |
+| `dsh --profile sdk-minimal` | 同上，但用独立的极简 agent 树 |
+| `dsh <name>` / `dsh --profile <name>` | 启动 `$DSH_HOME/profiles/<name>` 下的具名 profile |
+| `dsh --profile <name> --from-default-profile <template>` | 用出厂模板重建一个自定义 profile 再启动 |
+| `dsh plugin --profile <name> <pnpm args>` | 在 profile 目录里转发 pnpm 管理插件 |
+
+常用示例：
+
+```bash
+dsh --profile web --port 8080        # --port 属于 web app
+dsh --profile headless "run the tests"
+dsh --help                           # launcher 自己的帮助
+dsh --dump-config                    # 不启动，先看合成后的配置树
+```
+
+> **参数归属规则**：launcher 只解析自己的 flag，第一个不认识的 token 之后全部交给 profile 内的 app 插件。
+
+### 四、核心概念：Profile
+
+Profile = **插件 bundle 的有序叠加层**，目录结构：
+
+```
+$DSH_HOME/profiles/<name>/
+├── package.json        # dsh.profile.bundles 有序列表 + 外部插件依赖
+└── cordis.patch.yml    # 用户自己的补丁层
+```
+
+**合成顺序**（在空根树之上叠加）：
+
+```
+① 每个 bundle 的 patch（按 dsh.profile.bundles 顺序）
+② profile 自己的 cordis.patch.yml
+③ $DSH_HOME/cordis.patch.yml（home 级）
+④ --patch 命令行覆盖
+```
+
+**内置 bundle**：`dsh-base` · `dsh-web-app` · `dsh-headless` · `dsh-sdk-app` · `dsh-sdk-minimal` · `dsh-acp-app`
+
+**自动初始化**：`web` / `headless` / `sdk` / `sdk-minimal` / `acp` 首次使用时从出厂模板自动创建。`desktop` 名字被 Electron 占用，CLI 拒绝为其启动。
+
+**HMR**：profile 里启用 `dsh-hmr` 后，会监听 manifest 与两处 patch 文件，串行重载；未启用则重启生效。
+
+### 五、Web UI 使用流程
+
+```
+① 启动  dsh web
+② Settings → Models  填入 DeepSeek API Key（platform.deepseek.com）
+   → 保存即生效，无需重启
+③ Choose workspace   选一个项目目录
+   —— 未选 workspace 时，输入框不可用
+④ 开会话，发任务：
+   "Summarize this repository and identify its main packages."
+```
+
+Agent 能力：读写 workspace 文件、执行命令、委派子任务、维护计划。
+**受权限策略约束的操作会先问你。**
+
+### 六、安全提醒（官方 SAFETY.md）
+
+| 要点 | 官方原话要点 |
+|:--|:--|
+| 实验状态 | 未经安全审计，**不得视为安全或生产可用** |
+| 能力范围 | 会执行模型生成的代码和命令，加载第三方插件，访问网络/进程/凭据/文件 |
+| 风险 | 错误的模型输出、缺陷、误配置、恶意输入、不可信插件都可能损坏主机、删改文件、泄露数据 |
+| 沙箱局限 | 沙箱/审批/权限控制可降低风险，但**不保证隔离**，不能作为唯一安全措施 |
+| 建议 | 最小权限运行；优先用一次性 VM / 容器 / 专用环境；备份文件；审阅插件与配置 |
+
+---
 
 ## 相关文档
 
-- [[knowledge/infra/ai/01-GPU集群管理\|GPU 集群管理]]
+- [[knowledge/infra/ai/01-模型推理加速与部署\|模型推理加速与部署]]
+- [[knowledge/infra/ai/03-Ollama本地部署方案\|Ollama 本地部署方案]]（6GB 显存落地）
+- [[knowledge/infra/ai/04-vLLM部署练习手册\|vLLM 部署练习手册]]
+
