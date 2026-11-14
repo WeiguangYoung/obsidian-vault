@@ -294,14 +294,14 @@ add x0, x3, x4       # no-op！什么都不做
 
 ## 六、学习资源
 
-| 资源 | 链接/说明 |
-|---|---|
+| 资源            | 链接/说明                                              |
+| ------------- | -------------------------------------------------- |
 | **CS61C 速查卡** | `cs61c.org/fa26/pdfs/resources/reference-card.pdf` |
-| └ 内容 | 列出**完整基础架构** |
-| **Venus 模拟器** | `venus.cs61c.org` |
-| └ 内容 | 在线 RISC-V 模拟器 |
-| **完整技术规范** | RISC-V Technical Specifications |
-| └ 卷 I | **unprivileged ISA**（「非特权」= 任何程序都能运行，非 OS 专用）|
+| └ 内容          | 列出**完整基础架构**                                       |
+| **Venus 模拟器** | `venus.cs61c.org`                                  |
+| └ 内容          | 在线 RISC-V 模拟器                                      |
+| **完整技术规范**    | RISC-V Technical Specifications                    |
+| └ 卷 I         | **unprivileged ISA**（「非特权」= 任何程序都能运行，非 OS 专用）      |
 
 ---
 

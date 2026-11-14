@@ -36,15 +36,41 @@
 | 17 | SDS II: Combinational Logic | [[knowledge/course/CS61C/17-SDS-II-Combinational-Logic\|17-SDS-II-Combinational-Logic]] |
 | 18 | SDS III: State | [[knowledge/course/CS61C/18-SDS-III-State\|18-SDS-III-State]] |
 | 19 | SDS IV: Blocks and ALU | [[knowledge/course/CS61C/19-SDS-IV-Blocks-ALU\|19-SDS-IV-Blocks-ALU]] |
+| 20 | Datapath I | [[knowledge/course/CS61C/20-Datapath-I\|20-Datapath-I]] |
+| 21 | Datapath II | [[knowledge/course/CS61C/21-Datapath-II\|21-Datapath-II]] |
+| 22 | Control | [[knowledge/course/CS61C/22-Control\|22-Control]] |
+| 23 | Pipeline I: 5-Stage Pipeline | [[knowledge/course/CS61C/23-Pipeline-I\|23-Pipeline-I]] |
+| 24 | Pipeline II: Hazards | [[knowledge/course/CS61C/24-Pipeline-II-Hazards\|24-Pipeline-II-Hazards]] |
+| 25 | Pipeline III: Hazards, continued | [[knowledge/course/CS61C/25-Pipeline-III-Hazards-Continued\|25-Pipeline-III-Hazards-Continued]] |
+| 26 | Caches I | [[knowledge/course/CS61C/26-Caches-I\|26-Caches-I]] |
+| 27 | Caches II | [[knowledge/course/CS61C/27-Caches-II\|27-Caches-II]] |
+| 28 | Caches III | [[knowledge/course/CS61C/28-Caches-III\|28-Caches-III]] |
+| 29 | Caches IV | [[knowledge/course/CS61C/29-Caches-IV\|29-Caches-IV]] |
 
-**进度：19 / 29 讲**
+**进度：29 / 29 讲 ✅ 全部完成**
 
-### 后续讲次（待整理）
+### 六大 Great Ideas 分布
 
-| 讲 | 主题 |
-|:--:|:--|
-| 20–25 | 处理器设计：Datapath · 控制 · 流水线 · 性能 |
-| 26–29 | 存储层次：缓存 · 虚拟内存 · VM |
+| # | 思想 | 对应讲次 |
+|:--:|:--|:--|
+| 1 | **Abstraction** | L15 CALL · L26 内存幻觉 |
+| 2 | **Moore's Law** | L16 晶体管数增长 |
+| 3 | **Locality / Memory Hierarchy** | L26–L29 缓存 |
+| 4 | **Parallelism** | L20 五层并行 · L23 流水线 |
+| 5 | **Performance Measurement** | L23 latency vs throughput · L29 AMAT |
+| 6 | **Dependability via Redundancy** | L17 Majority Circuit |
+
+### 学习路径
+
+```
+L01–L02  数据表示        (2 讲)
+L03–L08  C 语言          (6 讲)
+L09–L15  RISC-V 指令集   (7 讲)
+L16–L19  数字电路        (4 讲)
+L20–L22  Datapath + 控制 (3 讲)
+L23–L25  流水线          (3 讲)
+L26–L29  缓存            (4 讲)
+```
 
 ---
 
