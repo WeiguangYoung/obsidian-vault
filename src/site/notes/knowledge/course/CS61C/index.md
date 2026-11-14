@@ -29,6 +29,22 @@
 | 10 | RISC-V Data Transfer | [[knowledge/course/CS61C/10-RISC-V-Data-Transfer\|10-RISC-V-Data-Transfer]] |
 | 11 | RISC-V Control Flow, Bitwise Ops | [[knowledge/course/CS61C/11-RISC-V-Control-Flow\|11-RISC-V-Control-Flow]] |
 | 12 | RISC-V Procedures | [[knowledge/course/CS61C/12-RISC-V-Procedures\|12-RISC-V-Procedures]] |
+| 13 | RISC-V Instruction Formats I | [[knowledge/course/CS61C/13-RISC-V-Instruction-Formats-I\|13-RISC-V-Instruction-Formats-I]] |
+| 14 | RISC-V Instruction Formats II | [[knowledge/course/CS61C/14-RISC-V-Instruction-Formats-II\|14-RISC-V-Instruction-Formats-II]] |
+| 15 | Running a Program (CALL) | [[knowledge/course/CS61C/15-CALL\|15-CALL]] |
+| 16 | SDS I: Intro to SDS | [[knowledge/course/CS61C/16-SDS-I-Intro\|16-SDS-I-Intro]] |
+| 17 | SDS II: Combinational Logic | [[knowledge/course/CS61C/17-SDS-II-Combinational-Logic\|17-SDS-II-Combinational-Logic]] |
+| 18 | SDS III: State | [[knowledge/course/CS61C/18-SDS-III-State\|18-SDS-III-State]] |
+| 19 | SDS IV: Blocks and ALU | [[knowledge/course/CS61C/19-SDS-IV-Blocks-ALU\|19-SDS-IV-Blocks-ALU]] |
+
+**进度：19 / 29 讲**
+
+### 后续讲次（待整理）
+
+| 讲 | 主题 |
+|:--:|:--|
+| 20–25 | 处理器设计：Datapath · 控制 · 流水线 · 性能 |
+| 26–29 | 存储层次：缓存 · 虚拟内存 · VM |
 
 ---
 
