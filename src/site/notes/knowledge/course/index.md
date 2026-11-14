@@ -86,9 +86,28 @@
 | 资源 | 链接 | 说明 |
 |:--|:--|:--|
 | **在线阅读（RISC-V）** | https://mit-pdos.github.io/xv6-riscv-book/ | 官方 HTML 版，最新 |
-| 教材源码 | https://github.com/mit-pdos/xv6-riscv-book | LaTeX 源 + 各版本 PDF |
+| **PDF 下载（rev4）** | https://pdos.csail.mit.edu/6.1810/2024/xv6/book-riscv-rev4.pdf | 最新可下载版本，2024 版 |
+| 教材源码 | https://github.com/mit-pdos/xv6-riscv-book | LaTeX 源 |
 | **xv6 内核源码** | https://github.com/mit-pdos/xv6-riscv | RISC-V 版教学内核 |
 | 课程视频中文稿 | https://mit-public-courses-cn-translatio.gitbook.io/mit6-s081/ | 与 RISC-V 版配套 |
+
+**本地 Markdown 全文**
+
+| 章 | 标题 |
+|:--:|:--|
+| 01 | [[knowledge/course/xv6-book/01-操作系统接口\|操作系统接口]] |
+| 02 | [[knowledge/course/xv6-book/02-操作系统组织\|操作系统组织]] |
+| 03 | [[knowledge/course/xv6-book/03-页表\|页表]] |
+| 04 | [[knowledge/course/xv6-book/04-Trap与系统调用\|Trap 与系统调用]] |
+| 05 | [[knowledge/course/xv6-book/05-缺页\|缺页]] |
+| 06 | [[knowledge/course/xv6-book/06-中断与设备驱动\|中断与设备驱动]] |
+| 07 | [[knowledge/course/xv6-book/07-锁\|锁]] |
+| 08 | [[knowledge/course/xv6-book/08-调度\|调度]] |
+| 09 | [[knowledge/course/xv6-book/09-睡眠与唤醒\|睡眠与唤醒]] |
+| 10 | [[knowledge/course/xv6-book/10-文件系统\|文件系统]] |
+| 11 | [[knowledge/course/xv6-book/11-日志\|日志]] |
+| 12 | [[knowledge/course/xv6-book/12-并发再探\|并发再探]] |
+| 13 | [[knowledge/course/xv6-book/13-总结\|总结]] |
 
 #### 全书 13 章
 
