@@ -29,7 +29,6 @@
 | **06** | 机器人 CI 全链路 | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] | ✅ 完成 |
 | **07** | 多架构交叉编译 | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] | ✅ 完成 |
 | **08** | 算法与模型门禁 | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] | ✅ 完成 |
-| **09** | 机器人 CI vs 车载 CI | [[knowledge/robotics/09-机器人CI与车载CI对照\|09-机器人CI与车载CI对照]] | ✅ 完成 |
 
 > 未做：**视觉的 SLAM/Nav2/MoveIt 部分**（岗位无关）、**HIL 真机**（需硬件）
 
@@ -48,7 +47,6 @@
 | **06** | [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] | **镜像 + 流水线合一**：Docker 5 大坑 + Jenkins 11 个坑、构建 SUCCESS、9 阶段全跑通、SIL 误差 0.72% |
 | **07** | [[knowledge/robotics/07-多架构交叉编译\|07-多架构交叉编译]] | **x86 → aarch64**：arm64 sysroot 120MB / 93 包、5 大坑、QEMU 验证、13 个 ARM64 产物 |
 | **08** | [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] | **性能 6 项 + 精度 3 项**：ONNX 评测、真实 MNIST 基线 98.3%、阈值随样本量动态 |
-| **09** | [[knowledge/robotics/09-机器人CI与车载CI对照\|09-机器人CI与车载CI对照]] | **转行核心材料**：14 维度对照、4 个关键差异、门禁重叠 67%、三段式面试话术 |
 
 ---
 
