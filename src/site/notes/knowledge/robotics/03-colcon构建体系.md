@@ -346,5 +346,5 @@ colcon test --packages-above robot_interfaces
 
 - [[knowledge/robotics/01-环境搭建\|01-环境搭建]] — 环境基线
 - [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] — 节点与 URDF
-- [[knowledge/devops/practices/06-构建系统实战-CMake与Bazel\|../devops/practices/06-构建系统实战-CMake与Bazel]] — CMake 底层原理
-- [00-机器人入门路线](00-机器人入门路线.md) — 路线规划
+- [[knowledge/embedded/01-嵌入式软件构建流程\|嵌入式软件构建流程]] — CMake 底层原理
+- [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划

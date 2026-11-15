@@ -220,4 +220,4 @@ parts:
 - [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] — 机器人 CI 实际落地
 - [[knowledge/robotics/06-机器人CI全链路\|06-机器人CI全链路]] — 构建环境
 - [[knowledge/robotics/08-算法与模型门禁\|08-算法与模型门禁]] — 模型门禁详解
-- [00-机器人入门路线](00-机器人入门路线.md) — 路线规划
+- [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划

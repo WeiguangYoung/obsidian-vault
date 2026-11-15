@@ -70,8 +70,8 @@ Turns out to be a powerful approach for extending the kernel
   $ make seccomp.bpf
   $ seccomp-tools disasm seccomp.bpf
   $ bwrap --bind / / --seccomp 5 5<seccomp.bpf -- sh
-  $ ls
-  $ mkdir d
+  $$ ls
+  $$ mkdir d
 
 Interesting technical challenges to get this working
   How to make sure the filter program doesn't crash (corrupt memory)?

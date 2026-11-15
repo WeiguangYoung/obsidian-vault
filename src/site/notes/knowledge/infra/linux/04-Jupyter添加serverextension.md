@@ -59,7 +59,11 @@ def load_jupyter_server_extension(nb_server_app):
     """安装拓展后，启动jupyter服务会被自动调用"""
     nb_server_app.log.info("my module enabled!")
     web_app = nb_server_app.web_app
-    host_pattern = '.*
+    host_pattern = '.*$'
+    route_pattern = url_path_join(web_app.settings['base_url'], '/hello')
+    web_app.add_handlers(host_pattern, [(route_pattern, HelloWorldHandler)])
+
+```
 在终端执行
 
 
@@ -93,32 +97,6 @@ Enabling: my_module
       my_module  OK
 
 ```
-
-#### 3.启动jupyter notebook
-
-启动jupyter后，浏览器输入 http://127.0.0.1:8888/hello
-
-出现 Hello, world!
-    route_pattern = url_path_join(web_app.settings['base_url'], '/hello')
-    web_app.add_handlers(host_pattern, [(route_pattern, HelloWorldHandler)])
-
-```
-在终端执行
-
-
-{{CODE_BLOCK_4}}
-出现下面的字样则表明安装成功
-
-
-{{CODE_BLOCK_5}}
-
-#### 2.添加module到serverextension
-
-{{CODE_BLOCK_6}}
-出现下面的字样则表明安装成功
-
-
-{{CODE_BLOCK_7}}
 
 #### 3.启动jupyter notebook
 

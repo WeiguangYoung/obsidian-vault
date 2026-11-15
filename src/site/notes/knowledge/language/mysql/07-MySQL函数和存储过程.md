@@ -21,7 +21,7 @@ end  自定义符号
 delimiter ;
 
 释义：
-delimiter 自定义符号 是为了在函数内些语句方便，制定除了;之外的符号作为函数书写结束标志,一般用$或者//
+delimiter 自定义符号 是为了在函数内些语句方便，制定除了;之外的符号作为函数书写结束标志,一般用$$或者//
 形参列表 ： 形参名 类型   类型为mysql支持类型
 返回类型:  函数返回的数据类型,mysql支持类型即可
 函数体： 若干sql语句组成
@@ -30,11 +30,11 @@ return: 返回指定类型返回值
 ```
 ```sql
 e.g. 无参数的函数调用
-delimiter $
+delimiter $$
 create function st() returns int 
 begin 
 return (select score from class order by score desc limit 1); 
-end $
+end $$
 delimiter ;
 
 select st();
@@ -42,12 +42,12 @@ select st();
 ```
 ```sql
 e.g. 含有参数的函数调用
-delimiter $
+delimiter $$
 create function queryNameById(uid int) 
 returns varchar(20)
 begin
 return  (select name from class where id=uid);
-end $
+end $$
 delimiter ;
 
 select queryNameById(1);
@@ -83,12 +83,12 @@ delimiter 自定义符号 是为了在函数内些语句方便，制定除了;�
 ```
 ```sql
 e.g. 存储过程创建和调用
-delimiter $
+delimiter $$
 create procedure st() 
 begin 
     select name,age from class; 
     select name,score from class order by score desc; 
-end $
+end $$
 delimiter ;
 
 call st();
@@ -102,13 +102,13 @@ call st();
 
 ```sql
 e.g. : 分别将参数类型改为IN OUT INOUT 看一下结果区别
-delimiter $
+delimiter $$
 create procedure p_out ( OUT num int )
 begin
     select num;
     set num=100;
     select num;
-end $
+end $$
 
 delimiter ;
 

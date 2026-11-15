@@ -433,4 +433,4 @@ max_duration = target / speed * 1.5   # 理论耗时 × 1.5
 - [[knowledge/robotics/01-环境搭建\|01-环境搭建]] — 环境基线（含 headless 基础验证）
 - [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] — 节点与 URDF
 - [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] — 构建与增量
-- [00-机器人入门路线](00-机器人入门路线.md) — 路线规划
+- [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划
