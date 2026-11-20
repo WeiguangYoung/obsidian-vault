@@ -8,7 +8,7 @@
 > MIT **6.S081 / 6.1810** · Operating System Engineering
 > 教材：xv6: a simple, Unix-like teaching operating system（RISC-V 版）
 
-课程概况、资源与学习路径见 [[knowledge/course/mit6.s081/00-介绍\|00-介绍]]。
+课程概况、资源与学习路径见 [[knowledge/course/mit6.s081/00-Course-Info\|00-Course-Info]]。
 
 返回 [[knowledge/course/index\|📚 课程资源]] · [[首页\|🏠 首页]]
 
@@ -18,8 +18,8 @@
 
 | 讲 | 主题 | 笔记 |
 |:--:|:--|:--|
-| **00** | 课程介绍与资源 | [[knowledge/course/mit6.s081/00-介绍\|00-介绍]] |
-| 2 | OS Organization and System Calls | [[knowledge/course/mit6.s081/02-OS-Organization-System-Calls\|02-OS-Organization-System-Calls]] |
+| **00** | 课程介绍与资源 | [[knowledge/course/mit6.s081/00-Course-Info\|00-Course-Info]] |
+| 2 | OS Organization and System Calls | [[knowledge/course/mit6.s081/02-OS-Syscalls\|02-OS-Syscalls]] |
 | 3 | Page Tables | [[knowledge/course/mit6.s081/03-Page-Tables\|03-Page-Tables]] |
 | 4 | Traps | [[knowledge/course/mit6.s081/04-Traps\|04-Traps]] |
 | 5 | Page Faults | [[knowledge/course/mit6.s081/05-Page-Faults\|05-Page-Faults]] |
@@ -40,8 +40,8 @@
 
 | 内容 | 文档 |
 |:--|:--|
-| 环境配置（Ubuntu + 工具链 + QEMU） | [[knowledge/course/mit6.s081/18-环境配置\|18-环境配置]] |
-| GDB 调试 | [[knowledge/course/mit6.s081/19-GDB调试\|19-GDB调试]] |
+| 环境配置（Ubuntu + 工具链 + QEMU） | [[knowledge/course/mit6.s081/18-Environment-Setup\|18-Environment-Setup]] |
+| GDB 调试 | [[knowledge/course/mit6.s081/19-GDB-Debug\|19-GDB-Debug]] |
 | xv6 手册精读（一/二/三/四/八章合订） | [[knowledge/course/mit6.s081/20-xv6-Manual\|20-xv6-Manual]] |
 
 ---

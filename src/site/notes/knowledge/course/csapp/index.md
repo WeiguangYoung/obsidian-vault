@@ -37,13 +37,12 @@
 | 文件 | 实验 |
 |:--|:--|
 | [[knowledge/course/csapp-labs/README\|csapp-labs/README]] | 实验总览 |
-| [[knowledge/course/csapp-labs/01-datalab\|csapp-labs/01-datalab]] | 01 Data Lab |
-| [[knowledge/course/csapp-labs/02-bomblab\|csapp-labs/02-bomblab]] | 02 Bomb Lab |
-| [[knowledge/course/csapp-labs/03-attacklab\|csapp-labs/03-attacklab]] | 03 Attack Lab |
-| [[knowledge/course/csapp-labs/04-archlab\|csapp-labs/04-archlab]] | 04 Architecture Lab（含 Y86-64 模拟器指南） |
-| [[knowledge/course/csapp-labs/05-cachelab\|csapp-labs/05-cachelab]] | 05 Cache Lab |
-| [[knowledge/course/csapp-labs/06-shlab\|csapp-labs/06-shlab]] | 06 Shell Lab |
-| [[knowledge/course/csapp-labs/07-malloclab\|csapp-labs/07-malloclab]] | 07 Malloc Lab |
-| [[knowledge/course/csapp-labs/08-proxylab\|csapp-labs/08-proxylab]] | 08 Proxy Lab |
-| [[knowledge/course/csapp-labs/09-兼容性说明\|csapp-labs/09-兼容性说明]] | 09 兼容性说明 |
-| [[knowledge/course/csapp-labs/10-实验包来源与校验\|csapp-labs/10-实验包来源与校验]] | 10 实验包来源与校验 |
+| [[knowledge/course/csapp-labs/00-Course-Info\|csapp-labs/00-Course-Info]] | 00 实验包来源与兼容性说明 |
+| [[knowledge/course/csapp-labs/01-Data-Lab\|csapp-labs/01-Data-Lab]] | 01 Data Lab |
+| [[knowledge/course/csapp-labs/02-Bomb-Lab\|csapp-labs/02-Bomb-Lab]] | 02 Bomb Lab |
+| [[knowledge/course/csapp-labs/03-Attack-Lab\|csapp-labs/03-Attack-Lab]] | 03 Attack Lab |
+| [[knowledge/course/csapp-labs/04-Architecture-Lab\|csapp-labs/04-Architecture-Lab]] | 04 Architecture Lab（含 Y86-64 模拟器指南） |
+| [[knowledge/course/csapp-labs/05-Cache-Lab\|csapp-labs/05-Cache-Lab]] | 05 Cache Lab |
+| [[knowledge/course/csapp-labs/06-Shell-Lab\|csapp-labs/06-Shell-Lab]] | 06 Shell Lab |
+| [[knowledge/course/csapp-labs/07-Malloc-Lab\|csapp-labs/07-Malloc-Lab]] | 07 Malloc Lab |
+| [[knowledge/course/csapp-labs/08-Proxy-Lab\|csapp-labs/08-Proxy-Lab]] | 08 Proxy Lab |

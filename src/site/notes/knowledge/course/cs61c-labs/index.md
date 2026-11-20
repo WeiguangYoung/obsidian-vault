@@ -17,21 +17,21 @@
 
 | Lab | 主题 | 工具 | 笔记 |
 |:--:|:--|:--|:--|
-| **00** | 环境配置与服务注册 | — | [[knowledge/course/cs61c-labs/lab00\|lab00]] |
-| **01** | C 基础（指针/数组/字符串/结构体） | C | [[knowledge/course/cs61c-labs/lab01\|lab01]] |
-| **02** | C 进阶与调试（GDB/Valgrind/vector） | C · GDB | [[knowledge/course/cs61c-labs/lab02\|lab02]] |
-| **03** | **RISC-V & Venus** | RISC-V 汇编 · Venus | [[knowledge/course/cs61c-labs/lab03\|lab03]] |
-| **04** | RISC-V 函数与调用约定 | RISC-V 汇编 | [[knowledge/course/cs61c-labs/lab04\|lab04]] |
-| **05** | Logisim 组合逻辑 | Logisim | [[knowledge/course/cs61c-labs/lab05\|lab05]] |
-| **06** | CPU 搭建与流水线 | Logisim | [[knowledge/course/cs61c-labs/lab06\|lab06]] |
-| **07** | 并行编程：SIMD 与 OpenMP | C · AVX · OpenMP | [[knowledge/course/cs61c-labs/lab07\|lab07]] |
+| **00** | 环境配置与服务注册 | — | [[knowledge/course/cs61c-labs/Lab00\|lab00]] |
+| **01** | C 基础（指针/数组/字符串/结构体） | C | [[knowledge/course/cs61c-labs/Lab01\|lab01]] |
+| **02** | C 进阶与调试（GDB/Valgrind/vector） | C · GDB | [[knowledge/course/cs61c-labs/Lab02\|lab02]] |
+| **03** | **RISC-V & Venus** | RISC-V 汇编 · Venus | [[knowledge/course/cs61c-labs/Lab03\|lab03]] |
+| **04** | RISC-V 函数与调用约定 | RISC-V 汇编 | [[knowledge/course/cs61c-labs/Lab04\|lab04]] |
+| **05** | Logisim 组合逻辑 | Logisim | [[knowledge/course/cs61c-labs/Lab05\|lab05]] |
+| **06** | CPU 搭建与流水线 | Logisim | [[knowledge/course/cs61c-labs/Lab06\|lab06]] |
+| **07** | 并行编程：SIMD 与 OpenMP | C · AVX · OpenMP | [[knowledge/course/cs61c-labs/Lab07\|lab07]] |
 | **08** | *OPTIONAL* 61kaChow（Project 4） | — | — |
 
 > Lab08 为可选实验，仅一段说明，无独立笔记。
 
 ## 项目（Projects）
 
-三个 Project 的介绍与规划见 **[[knowledge/course/cs61c-labs/projects\|🛠️ Projects 总览]]**（snek · CS61Classify · CS61CPU）。
+三个 Project 的介绍与规划见 **[[knowledge/course/cs61c-labs/Projects\|🛠️ Projects 总览]]**（snek · CS61Classify · CS61CPU）。
 
 ---
 

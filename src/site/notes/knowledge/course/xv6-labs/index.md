@@ -28,7 +28,7 @@
 
 | Lab | 前置课程笔记 |
 |:--:|:--|
-| 1 | [[knowledge/course/mit6.s081/02-OS-Organization-System-Calls\|02-OS-Organization-System-Calls]] |
+| 1 | [[knowledge/course/mit6.s081/02-OS-Syscalls\|02-OS-Syscalls]] |
 | 2 | [[knowledge/course/mit6.s081/04-Traps\|04-Traps]] |
 | 3 | [[knowledge/course/mit6.s081/03-Page-Tables\|03-Page-Tables]] |
 | 4 | [[knowledge/course/mit6.s081/04-Traps\|04-Traps]] |
@@ -42,7 +42,7 @@
 ## 说明
 
 - 每个 Lab 通常在课程对应讲次后布置，建议先读完同名课程笔记再做。
-- 实验环境搭建见 [[knowledge/course/mit6.s081/18-环境配置\|环境配置]]，调试方法见 [[knowledge/course/mit6.s081/19-GDB调试\|GDB 调试]]。
+- 实验环境搭建见 [[knowledge/course/mit6.s081/18-Environment-Setup\|环境配置]]，调试方法见 [[knowledge/course/mit6.s081/19-GDB-Debug\|GDB 调试]]。
 - 笔记中的截图保留为原始外链（已逐张验证可访问），本目录不存放图片文件。
 
 ---
