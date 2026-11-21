@@ -5,7 +5,7 @@
 
 # CSAPP Labs · 实验包信息
 
-八个实验的说明与源码包信息。实验说明见 [[README\|README]]。
+八个实验的说明与源码包信息。实验说明见 [[knowledge/course/csapp-labs/index\|index]]。
 
 返回 [[knowledge/course/csapp/index\|📚 CSAPP 目录]] · [[knowledge/course/index\|📚 课程资源]] · [[首页\|🏠 首页]]
 

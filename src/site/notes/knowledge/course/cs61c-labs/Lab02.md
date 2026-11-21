@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab02/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab02/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -539,6 +539,21 @@ void create_student_t_2(student_t **p, int id) { // 写法 2：双重指针出�
 | `bork.c:10` + `main` 末尾 | 缺终止符 + 未 free | `(len+1)` 并置 `'\0'`；`free_Str(dest_str)` |
 
 > `ex5_segfault.c`（不改，只答题）的 bug 在 `ben` 第 15 行：解引用 `NULL`。
+
+---
+
+## ✅ 验收清单
+
+| # | 检查 | 命令 | 判据 |
+|:--:|---|---|---|
+| 1 | 编译警告修复 | `gcc -Wall -Wextra -o ex1 ex1_compiler_warnings.c` | 警告全部消除（原始有 3 个） |
+| 2 | 密码检查器 | `gcc -g -o pwd_checker test_pwd_checker.c pwd_checker.c && ./pwd_checker` | **7 个 assert 全部通过**，无 `Assertion failed` |
+| 3 | vector 实现 | `gcc -g -o ex7_vector ex7_vector.c ex7_test_vector.c && ./ex7_vector` | 测试通过 |
+| 4 | Valgrind 无泄漏 | `valgrind --leak-check=full ./pwd_checker` | `definitely lost: 0 bytes` |
+| 5 | segfault 定位 | 按题目要求答 `ex5_answers.txt` | 能指出 `bork.c` 的 `NULL` 解引用 |
+
+> ⚠️ **starter 原样跑 `./pwd_checker` 会在 `test_pwd_checker.c:12` 的 `test1` 断言失败**（实测）。这是待修的 bug，不是环境问题——修好 `pwd_checker.c` 后才能全过。
+> 💡 `Assertion 'test1' failed` 是最有用的信号：它直接告诉你第几个测试用例崩了，按顺序往后修即可。
 
 ---
 

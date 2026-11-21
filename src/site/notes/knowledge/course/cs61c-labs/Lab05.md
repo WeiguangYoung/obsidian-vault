@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab05/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab05/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -417,11 +417,43 @@ Bit 1        : 15       ← 下面那根扇出线 = 输入的其余 15 位
 
 ## 待补充
 
-| 项 | 原因 |
+| 项 | 状态 |
 |---|---|
-| Lab Slides 的逐步截图 | Google Slides 未抓取；正文已覆盖全部操作步骤 |
-| Exercise 3 / 4 的官方文字描述 | 抓取的 md 在 Exercise 2 测试段后截断，Ex3/Ex4 由 starter 电路 + `.ref` 反推 |
-| `rotN` 官方推荐实现 | 截断内容中没有；本笔记给了两种等价做法 |
+| Lab Slides 的逐步截图 | ⬜ Google Slides 未抓取；正文已覆盖全部操作步骤，不影响做题 |
+| Exercise 3 / 4 的官方文字描述 | ✅ 已从官方页面抓全，见下方「官方原文要点」 |
+| `rotN` 官方推荐实现 | ✅ 官方**未**给推荐实现，只禁止用 Logisim 内置 shifter；本笔记的两种做法都合规 |
+
+### 官方原文要点（Ex3 / Ex4）
+
+**Exercise 3: Storing State** —— 官方要求：
+
+```text
+① File → Open → lab05/ex3.circ，进入空的 AddMachine 电路
+② 从 Arithmetic 库取 Adder，从 Memory 库取 Register，放进 AddMachine
+③ 把 clk 输入引脚接到 Register 的时钟脚
+   （harness 通过 clk 引脚把时钟送进来，所有元件最好共用同一时钟）
+④ 数据流：REG → Adder → REG 构成累加闭环
+```
+
+> 💡 官方强调：**记得频繁保存，不要移动或编辑提供的输入/输出引脚。**
+
+**Exercise 4: Rotate Right** —— 官方原文关键句：
+
+> `RotRight` 把 `INPUT0` 的位模式**循环右移** `AMOUNT` 位。
+> 例：`INPUT0 = 0b1000000000000101`、`AMOUNT = 0b0011`（3）→ 输出 `0b1011000000000000`。
+> 位运算表示：**`R = A >> B | A << (16 - B)`**
+
+引脚定义（官方给出）：
+
+| 引脚 | 位宽 | 含义 |
+|---|:--:|---|
+| `INPUT0` | 16 | 待旋转的值 |
+| `AMOUNT` | 4 | 旋转量 |
+| `OUTPUT0` | 16 | 结果 |
+
+> ⚠️ 官方明文：**You are NOT allowed to use Logisim shifters in your solution** —— 禁止用内置移位器，
+> 但 MUX、常数、门电路都可以。所以必须走 `rot1/rot2/rot4/rot8` + MUX2 级联的路子。
+> 💡 官方还留了一个思考题：`AMOUNT` **为什么是 4 位**？—— 因为 16 位数据的旋转量范围是 0–15，正好 4 位。
 
 > 已核对 `.circ` 文件：`AddMachine` 引脚位宽 1/8/8，`RotRight` 引脚位宽 4/16/16，`rot1~rot8` 各两个 16 位引脚。
 

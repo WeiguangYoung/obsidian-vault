@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab04/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab04/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -718,7 +718,7 @@ exit:
 ## 七、提交
 
 ```bash
-cd /home/yang/.openclaw/workspace/fa26-lab-starter
+cd /home/yang/repos/fa26-lab-starter
 git add lab04/
 git commit -m "lab04: fix calling convention in ex1/ex2/ex3"
 git push origin main

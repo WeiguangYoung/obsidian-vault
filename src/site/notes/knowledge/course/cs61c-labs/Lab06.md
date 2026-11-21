@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab06/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab06/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -73,17 +73,21 @@ git pull starter main     # 拉取 lab06 的骨架文件
 **跑测试**：
 
 ```bash
-cd /home/yang/.openclaw/workspace/fa26-lab-starter/lab06
+cd /home/yang/repos/fa26-lab-starter/lab06
 python3 test.py
 ```
 
-输出三个关键文件（在 `tests/out/`）：
+每个测试会在 `tests/out/` 下产出**两个**文件（`.ref` 是官方期望，随仓库提供；`.out` 是你跑出来的）：
 
 ```text
-ex1-test.out   # 你电路的输出（CSV）
-ex1-test.ref   # 期望输出（CSV）
-ex1-test.out 与 .ref 逐行 diff → 哪一行不匹配就是哪个输入出的问题
+ex1-test.ref   # 期望输出（CSV，仓库自带，勿改）
+ex1-test.out   # 你电路的输出（CSV，运行时生成）
 ```
+
+两者逐行 diff → 哪一行不匹配，就是哪个输入出的问题。
+
+> ⚠️ `test.py` 共跑 **4 个测试**：`ex1`（立即数生成）、`ex2`（BrUn）、`ex4`（流水线）、`ex5`（num_checker 调试）。
+> **`ex3` 不在测试列表里** —— 它是只读参考电路，只用来算周期数填 `ex3_answers.txt`。
 
 `test.py` 的实际流程（读源码可得）：
 
@@ -204,7 +208,7 @@ INSTRUCTION = 11111110010101000010100000100011
 **不要手算猜，直接跑脚本对答案**（本机已验证可用）：
 
 ```bash
-cd /home/yang/.openclaw/workspace/fa26-lab-starter/lab06
+cd /home/yang/repos/fa26-lab-starter/lab06
 python3 - <<'PY'
 for line in open('tests/out/ex1-test.ref').read().splitlines()[1:]:
     cyc, ins, imm = line.split(',')
@@ -693,7 +697,31 @@ CYCLE,OUT1,    IN1,      IN2
 0010, 00001100, 11111100, 01110000
 ```
 
-`IN1 = 0xFC = -4`（8 位补码），`IN2 = 0x70 = 112`。若运算是 `(a+b)×c` 或 `a×b + 累加`，需按 `ex4.circ` 实际结构核对 —— **具体算式以电路为准，此处待补充精确推导**。
+`IN1 = 0xFC = -4`（8 位补码），`IN2 = 0x70 = 112`。
+
+**精确算式（已用 `.ref` 全表验证，11 行 0 误差）**：
+
+```text
+out[i] = ( Σ_{k=0}^{i-2}  IN1[k] × IN2[k] )  mod 256
+```
+
+即：**前两拍输出必为 0**（`i=0` 无数据、`i=1` 加法级还空着），从第 3 拍（`CYCLE=0010`）起，输出的是「**上一拍为止的乘积累加**」。
+
+逐拍核对：
+
+| CYCLE | IN1 | IN2 | 乘积 | 预测 out | `.ref` out |
+|:--:|--:|--:|--:|--:|--:|
+| 0000 | 3 | 4 | 12 | 0 | 0 |
+| 0001 | 2 | 5 | 10 | 0 | 0 |
+| 0010 | -4 | 112 | -448 | 12 | 12 |
+| 0011 | 1 | 9 | 9 | 22 | 22 |
+| 0100 | 2 | 13 | 26 | 86 | 86 |
+| 0101 | -5 | 12 | -60 | 95 | 95 |
+| 0110 | 1 | 2 | 2 | 121 | 121 |
+| 0111 | 0 | 0 | 0 | 61 | 61 |
+| 1000+ | 0 | 0 | 0 | 63 | 63 |
+
+> ✅ 结论：**两级延迟，输出 = 延迟两拍后的累加和**（模 256，因为输出线宽 8 位）。输入归零后输出停在 `00111111`（63），说明流水线排空后保持最后结果。
 
 ⚠️ 注意：`.ref` 的输出在 `CYCLE=0111` 之后输入变成 `00000000`，输出停在 `00111111`，说明加速器停止输入后流水线**排空/保持不变**。测试只比你输出的前 N 行。
 
@@ -760,20 +788,45 @@ ten      =  (bits_ten  == 0b10)  ← 2 位只能表示 0..3，这是 bug 苗头
 ⑧ 回到电路修 bug，重复
 ```
 
-**`ex5_answers.txt` 题目（11 题，题干未完整抓取）**：
+### 官方 11 道题（原文照录）
 
-从 lab 原文可确认的问题：
+答案写进 `ex5_answers.txt`。**注意：模板只给了 1.–2. 两个 bullet，需自己补 `3.`~`11.`；题号未必等于步骤号。**
+
+| # | 题目 | 答案（按 `.ref` 推演） |
+|:--:|---|---|
+| 1 | time step 0（tick 之前）时 `bit_zero` 的值？ | `0`（num=200，LSB=0） |
+| 2 | time step 0 时 `is_odd` 的值？ | `0` |
+| 3 | tick 一个完整周期后，`bit_zero` 的值？ | `1`（num=201，LSB=1） |
+| 4 | `is_odd` 输出引脚的值？ | `1` |
+| 5 | 再 tick 两个完整周期，用 waveform viewer 看 `num` 的十进制值？ | `15`（CYCLE=0011） |
+| 6 | `greater_than_fifteen` 输出引脚的值？ | `0`（15 不大于 15，边界） |
+| 7 | 再 tick 一个周期，`num` 的十进制值？ | `17`（CYCLE=0100） |
+| 8 | `greater_than_fifteen` 输出引脚的值？ | `1` |
+| 9 | 此刻电路处在哪个 time step？ | `4` |
+| 10 | `bits_five` 的值（二进制）？ | `0b010` ⚠️ 见下注 |
+| 11 | `five_or_ten` 输出引脚的值？ | `0` |
+
+> ⚠️ **Q10 需按电路确认**：`bits_five` 取自 3 位 splitter，本表按「`num` 的 bit[5:3]」推算
+> （`17 = 0b10001` → bit5=0、bit4=1、bit3=0 → `0b010`）。若骨架里 splitter 的位区间不同，结果会变 ——
+> 用 Poke 点一下该引脚即可核对，比推算可靠。
+
+> 💡 时序推演：Q1/Q2 是 tick **之前**（CYCLE=0000）；Q3/Q4 是第 1 拍；Q5/Q6 是第 3 拍（0000→0001→0010→0011）；Q7 之后是第 4 拍。
+
+**关键前置操作（官方原文）**：
 
 ```text
-Q?:  "What time step is the circuit at? The answer should be an integer."
-     → 第 8 步 tick 后作答。起点 CYCLE=0，每次 tick +1。
-       具体到第几拍取决于题目顺序，按你实际 tick 次数记。
-
-Q?:  "Why are such bubbles unnecessary for this particular circuit?"
-     （这是 Ex4 的问题，不要写进 ex5）
-
-其余 Q1-Q11：待补充（需要完整 lab 页面正文/截图）
+① File → Open → lab06/tests/ex5-test.circ
+   （ROM 里存的就是顺序喂给 ex5 的 32 位数）
+② 右键 num_checker → "View num_checker"（或用 Simulate 标签切换）
+③ 先搭一个计数器 gadget：一个寄存器自增，标签必须命名 num_cycles
+   —— 用来探测当前 time step
+④ 右键 num_cycles、num，改成 Signed Decimal 便于读数
+⑤ 用 Poke 工具观察 bit_zero / is_odd / bits_five 等内部信号
+⑥ 逐拍 tick，配 waveform viewer（Simulate → 波形）回答 Q5–Q8
 ```
+
+> 💡 Q1/Q2 问的是 **tick 之前**，即电路初始状态 —— 先别动时钟。
+> 💡 Q9 靠你搭的 `num_cycles` gadget 读，和你实际 tick 的次数一致。
 
 **已知的 `.ref` 数据**（供对照）：
 
@@ -819,13 +872,13 @@ Project 3 的测试台结构和 `ex5-test.circ` **几乎一样**：ROM 存指令
 
 ## 待补内容
 
-| 项 | 原因 |
+| 项 | 状态 |
 |---|---|
-| `ex5_answers.txt` Q1–Q11 完整题干 | lab 页面正文未完整抓取（只有片段）|
-| Ex4 `.ref` 的精确算式推导 | 需确认 `ex4.circ` 的加法输入接法（累加？常数？）|
-| Ex3 是否还问频率 | `ex3_answers.txt` 只有 1 个 bullet，推测只问周期 |
+| `ex5_answers.txt` Q1–Q11 完整题干 | ✅ 已从官方页面抓全，见上文「官方 11 道题」 |
+| Ex4 `.ref` 的精确算式推导 | ✅ 已用 `.ref` 全表验证：`out[i] = (Σ_{k=0}^{i-2} IN1[k]×IN2[k]) mod 256`，11 行 0 误差 |
+| Ex3 是否还问频率 | ✅ 官方只问 1 题（critical path，单位 ns），`ex3_answers.txt` 只有 1 个 bullet 是对的，**不问频率** |
 
-**补齐方式**：给我 lab 06 页面的完整正文（或题号截图），我逐题补上。
+**剩余开放项**：无。
 
 ---
 

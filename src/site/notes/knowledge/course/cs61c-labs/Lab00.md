@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab00/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab00/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -418,6 +418,24 @@ python3 code.py
 | `debug.txt` 里 Java 版本为空 | 没把 stderr 重定向 | 脚本已用 `2>&1`，自行手敲时别漏 |
 | macOS Python 证书报错 | 未安装根证书 | 跑 `Install Certificates.command` 后**重开终端** |
 | Windows 命令全报错 | 用了 cmd.exe | 改用 **Git Bash** |
+
+---
+
+## ✅ 验收清单
+
+全部做完后再对一遍，缺一项就会影响后续 lab：
+
+| # | 检查 | 命令 / 判据 |
+|:--:|---|---|
+| 1 | SSH 能登录 | `ssh hive2` 出现提示符、无密码报错 |
+| 2 | 本地工具链就绪 | `java -jar tools/venus.jar -v` 打印版本号 |
+| 3 | GitHub 已关联 | GitHub 头像 → Settings → Applications 里能看到 CS61C 课程 |
+| 4 | SSH key 已注册 | `cat ~/.ssh/id_ed25519.pub` 与 GitHub 上的一致 |
+| 5 | 仓库已克隆 | `cd ~/labs && git remote -v` 有 `origin`，且能 `git pull` |
+| 6 | dotfiles 生效 | 提示符有颜色、`ll` 可用 |
+| 7 | 环境自检脚本通过 | `bash gen-debug.sh` 生成的 `debug.txt` 无报错行 |
+
+> `gen-debug.sh` 会把 Java、Python、Git、SSH 版本一次性写进 `debug.txt`——交 lab 时这份文件就是「环境没问题」的证据。
 
 ---
 

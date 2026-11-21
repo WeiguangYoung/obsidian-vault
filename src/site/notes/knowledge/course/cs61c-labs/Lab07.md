@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab07/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab07/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -30,7 +30,7 @@
 
 ## 二、文件清单
 
-> ⚠️ **本地仓库 `fa26-lab-starter` 目前只拉到 lab06**（`origin/main` 上还没有 lab07 目录）。以下清单按 FA24 版 starter 结构整理，FA26 若文件有变动以实际为准。
+> ✅ **已核对**（2026-11-20）：上游 `61c-teach/fa26-lab-starter` 的 `main` 已发布 lab07（commit `878c972 "Fa26 lab07 (#9)"`），本地已 pull 到。以下清单**与仓库实际文件一致**，不再是 FA24 版推测。
 
 | 文件 | 状态 | 说明 |
 |---|---|---|
@@ -586,8 +586,21 @@ cd ~/labs && git add lab07 && git commit -m "Finish lab07" && git push origin ma
 
 | 项 | 原因 |
 |---|---|
-| FA26 版 `lab07/` 实际文件 | 本地 `origin/main` 只到 lab06，内容按 FA24 版推断，**待拉取后核对** |
-| FA26 `Makefile` 的 `CFLAGS` | 是否改为 `-O2` 或加 `-mavx2` 未知 |
+| ~~FA26 版 `lab07/` 实际文件~~ | ✅ 已核对：`ex1.c/ex1.h/ex1_test.c/ex2.c/ex2.h/ex2_test.c/openmp_example.c/Makefile`，与上文清单完全一致 |
+| ~~FA26 `Makefile` 的 `CFLAGS`~~ | ✅ 已核对：`CFLAGS_SIMD=-std=c99 -Wall -O0 -c`、`CFLAGS_OMP=-std=gnu99 -fopenmp -c -g`、`LDFLAGS_OMP=-fopenmp`，**未加 `-mavx`**，与上文一致 |
+
+---
+
+## ✅ 验收清单
+
+| # | 检查 | 命令 | 判据 |
+|:--:|---|---|---|
+| 1 | SIMD 版通过 | `make ex1 && ./ex1` | 打印 `Test Passed!`；两路 sum 与 reference 一致 |
+| 2 | OpenMP 版通过 | `make ex2 && ./ex2` | 同样 `Test Passed!` |
+| 3 | 无编译警告 | `make clean && make ex1 ex2` | 无 `-Wunused-variable` 之类的残留 |
+
+> ⚠️ **构建目标是 `make ex1` / `make ex2`，不是 `make ex1_test`**（实测后者会链接失败：`undefined reference to 'sum_unrolled'`）——因为 `ex1_test` 只是测试骨架，没有你的实现。
+> ⚠️ starter 原样跑 `./ex1` 会输出 `Test Failed! SIMD unrolled sum 0 doesn't match reference sum 103161741312`——`0` 说明函数还是空壳，属预期。
 
 ---
 

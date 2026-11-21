@@ -16,7 +16,7 @@
 | # | 课程 | 文档 |
 |:--|:--|:--|
 | 01 | CSAPP 计算机系统基础（CMU 15-213） | [[knowledge/course/csapp/index\|csapp/index]] |
-| 02 | CSAPP 实验说明（8 个 Lab） | [[knowledge/course/csapp-labs/README\|csapp-labs/README]] |
+| 02 | CSAPP 实验说明（8 个 Lab） | [[knowledge/course/csapp-labs/index\|csapp-labs/index]] |
 | 03 | CS61C 计算机体系结构（UC Berkeley FA26） | [[knowledge/course/cs61c/index\|cs61c/index]] |
 | 04 | CS61C 实验与项目（Lab00–08 + 3 个 Project） | [[knowledge/course/cs61c-labs/index\|cs61c-labs/index]] |
 | 05 | xv6 book 教学操作系统 | [[knowledge/course/xv6-book/index\|xv6-book/index]] |

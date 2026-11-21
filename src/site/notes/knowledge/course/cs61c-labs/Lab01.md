@@ -7,7 +7,7 @@
 
 > UC Berkeley · Great Ideas in Computer Architecture · Fall 2026
 > 代码仓库：`github.com/61c-teach/fa26-lab-starter`
-> 本地路径：`/home/yang/.openclaw/workspace/fa26-lab-starter/lab01/`
+> 本地路径：`/home/yang/repos/fa26-lab-starter/lab01/`
 
 返回 [[knowledge/course/cs61c-labs/index\|🧪 Labs 总览]] · [[knowledge/course/cs61c/index\|📚 CS61C 目录]]
 
@@ -565,6 +565,24 @@ git push origin main
 | 字符串 | `strcpy(dst, src)` 顺序写反 |
 | 字符串 | 修改字符串字面量（只读内存 → segfault） |
 | struct | 手算大小忽略 padding |
+
+---
+
+## ✅ 验收清单
+
+每个 `ex*.c` 单独编译运行，输出与注释里的期望一致才算过：
+
+| 文件 | 编译命令 | 判据 |
+|---|---|---|
+| `ex1_hello.c` | `gcc -o ex1_hello ex1_hello.c && ./ex1_hello` | 输出 `Hello World` |
+| `ex2_pointers_and_functions.c` | 同上（需先填完 `______`） | 编译无 error；输出与注释一致 |
+| `ex3_arrays.c` | `gcc -o ex3 ex3_arrays.c && ./ex3` | 数组和值正确 |
+| `ex4_pointer_arithmetic.c` | `gcc -o ex4 ex4_pointer_arithmetic.c && ./ex4` | 指针偏移结果正确 |
+| `ex5_strings.c` | `gcc -o ex5 ex5_strings.c && ./ex5` | 字符串拼接/比较正确 |
+| `ex6_structs.c` | `gcc -o ex6 ex6_structs.c && ./ex6` | 结构体字段与 `sizeof` 输出正确 |
+
+> ⚠️ **`ex2` 的骨架里有 `______` 占位符**，不填完无法编译（实测报 `unknown type name '______'`）。这是正常现象，不是环境问题。
+> 💡 建议加 `-Wall -Wextra` 编译，Lab 1 的多数坑（未初始化、隐式转换）编译器会直接提示。
 
 ---
 

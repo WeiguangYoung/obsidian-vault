@@ -36,7 +36,7 @@
 
 | 文件 | 实验 |
 |:--|:--|
-| [[knowledge/course/csapp-labs/README\|csapp-labs/README]] | 实验总览 |
+| [[knowledge/course/csapp-labs/index\|csapp-labs/index]] | 实验总览 |
 | [[knowledge/course/csapp-labs/00-Course-Info\|csapp-labs/00-Course-Info]] | 00 实验包来源与兼容性说明 |
 | [[knowledge/course/csapp-labs/01-Data-Lab\|csapp-labs/01-Data-Lab]] | 01 Data Lab |
 | [[knowledge/course/csapp-labs/02-Bomb-Lab\|csapp-labs/02-Bomb-Lab]] | 02 Bomb Lab |

@@ -41,13 +41,27 @@
 
 ## 说明
 
+每篇 Lab 文档统一分三部分：
+
+| 部分 | 内容 |
+| --- | --- |
+| 一、实验题目 | 官方题目中文翻译，含任务要求、提示、评分命令 |
+| 二、我的实现 | 实际动手的代码与踩坑记录 |
+| 三、参考答案与讲解 | 另一份实现的思路说明与完整代码 |
+
+- 题目与参考答案译自 `duguosheng/6.S081-All-in-one`，该仓库的配图未随文收录。
+- 本目录不存放任何图片文件；原笔记中的截图保留为原始外链（共 10 处）。
 - 每个 Lab 通常在课程对应讲次后布置，建议先读完同名课程笔记再做。
 - 实验环境搭建见 [[knowledge/course/mit6.s081/18-Environment-Setup\|环境配置]]，调试方法见 [[knowledge/course/mit6.s081/19-GDB-Debug\|GDB 调试]]。
-- 笔记中的截图保留为原始外链（已逐张验证可访问），本目录不存放图片文件。
 
 ---
 
 ## 官方资源
 
-- Lab 说明与代码骨架：https://pdos.csail.mit.edu/6.828/2020/labs/
+- Lab 说明：https://pdos.csail.mit.edu/6.828/2020/labs/
+- Lab 骨架（官方，`git://` 协议，无 https 镜像）：
+  ```bash
+  git clone git://g.csail.mit.edu/xv6-labs-2020
+  cd xv6-labs-2020 && git checkout util
+  ```
 - xv6 源码：https://github.com/mit-pdos/xv6-riscv
