@@ -132,7 +132,7 @@ make clean
 
 这里使用`git fetch`老是出错，不过也不影响写lab。
 
-![截屏2022-09-15 16.52.31](http://cdn.zhengyanchen.cn/img202209151652331.png)
+![截屏2022-09-15 16.52.31](/img/user/knowledge/course/xv6-labs/attachments/img202209151652331.png)
 
 ### Print a page table
 
@@ -356,13 +356,13 @@ sfence_vma();
 
 
 
-![截屏2022-09-17 18.42.04](http://cdn.zhengyanchen.cn/img202209171847256.png)
+![截屏2022-09-17 18.42.04](/img/user/knowledge/course/xv6-labs/attachments/img202209171847256.png)
 
 
 
-![截屏2022-09-17 18.44.37](http://cdn.zhengyanchen.cn/img202209171847898.png)
+![截屏2022-09-17 18.44.37](/img/user/knowledge/course/xv6-labs/attachments/img202209171847898.png)
 
-![截屏2022-09-17 18.44.00](http://cdn.zhengyanchen.cn/img202209171848675.png)
+![截屏2022-09-17 18.44.00](/img/user/knowledge/course/xv6-labs/attachments/img202209171848675.png)
 
 ​	 
 

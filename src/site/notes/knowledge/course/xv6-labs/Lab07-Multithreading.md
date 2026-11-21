@@ -368,9 +368,9 @@ e1 is lost
 
 * 只加一把大锁
 
-  <img src="http://cdn.zhengyanchen.cn/img202211130050478.png" alt="截屏2022-11-13 00.50.26" style="zoom:43%;" />
+  <img src="/img/user/knowledge/course/xv6-labs/attachments/img202211130050478.png" alt="截屏2022-11-13 00.50.26" style="zoom:43%;" />
 
-<img src="http://cdn.zhengyanchen.cn/img202211130049837.png" alt="截屏2022-11-13 00.49.22" style="zoom:43%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202211130049837.png" alt="截屏2022-11-13 00.49.22" style="zoom:43%;" />
 
 * 每散列桶的数据是不相同的，其数据结构如下
 
@@ -526,7 +526,7 @@ barrier()
 
 最后的测试
 
-![截屏2022-12-15 13.59.14](http://cdn.zhengyanchen.cn/img202212151359820.png)
+![截屏2022-12-15 13.59.14](/img/user/knowledge/course/xv6-labs/attachments/img202212151359820.png)
 
 ---
 

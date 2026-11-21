@@ -431,7 +431,7 @@ copyout(pagetable_t pagetable, uint64 dstva, char *src, uint64 len)
 
 来看这样一种情况
 
-<img src="http://cdn.zhengyanchen.cn/img202210051758214.png" alt="截屏2022-10-05 17.58.39" style="zoom:50%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202210051758214.png" alt="截屏2022-10-05 17.58.39" style="zoom:50%;" />
 
 父进程fork出子进程，现在子进程sbrk到超过物理内存大小，再不断访问直到分配完所有的物理页，这时候父进程调用
 
@@ -445,9 +445,9 @@ wait(&xstatus);
 
 ### 结果
 
-* <img src="http://cdn.zhengyanchen.cn/img202210301621119.png" alt="截屏2022-10-30 16.21.17" style="zoom:30%;" />
+* <img src="/img/user/knowledge/course/xv6-labs/attachments/img202210301621119.png" alt="截屏2022-10-30 16.21.17" style="zoom:30%;" />
 
-* <img src="http://cdn.zhengyanchen.cn/img202210301622825.png" alt="截屏2022-10-30 16.22.07" style="zoom:30%;" />
+* <img src="/img/user/knowledge/course/xv6-labs/attachments/img202210301622825.png" alt="截屏2022-10-30 16.22.07" style="zoom:30%;" />
 
 ---
 

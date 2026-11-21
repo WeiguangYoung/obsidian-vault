@@ -216,7 +216,7 @@ make CPUS=1 qemu-gdb
 
 ### Risc-v assembly
 
-* ![截屏2022-10-07 11.35.54](http://cdn.zhengyanchen.cn/img202210071135665.png)
+* ![截屏2022-10-07 11.35.54](/img/user/knowledge/course/xv6-labs/attachments/img202210071135665.png)
 
   
 
@@ -255,7 +255,7 @@ make CPUS=1 qemu-gdb
 
 * 输出
 
-  <img src="http://cdn.zhengyanchen.cn/img202210071155361.png" alt="截屏2022-10-07 11.55.10" style="zoom: 25%;" />
+  <img src="/img/user/knowledge/course/xv6-labs/attachments/img202210071155361.png" alt="截屏2022-10-07 11.55.10" style="zoom: 25%;" />
 
   如果大端，i修改如下,57616 无需修改
 
@@ -263,7 +263,7 @@ make CPUS=1 qemu-gdb
   unsigned int i=0x726c6400;
   ```
 
-* <img src="http://cdn.zhengyanchen.cn/img202210071204946.png" alt="截屏2022-10-07 12.04.28" style="zoom:25%;" />
+* <img src="/img/user/knowledge/course/xv6-labs/attachments/img202210071204946.png" alt="截屏2022-10-07 12.04.28" style="zoom:25%;" />
 
   y输出的是`a1` 寄存器的原来内容。
 
@@ -275,7 +275,7 @@ make CPUS=1 qemu-gdb
 
 
 
-![截屏2022-10-07 21.22.37](http://cdn.zhengyanchen.cn/img202210072122637.png)
+![截屏2022-10-07 21.22.37](/img/user/knowledge/course/xv6-labs/attachments/img202210072122637.png)
 
 
 

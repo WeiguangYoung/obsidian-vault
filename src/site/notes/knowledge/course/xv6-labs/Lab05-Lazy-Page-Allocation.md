@@ -126,7 +126,7 @@ sys_sbrk(void)
 }
 ```
 
- 出现page fault<img src="http://cdn.zhengyanchen.cn/img202210162313076.png" alt="截屏2022-10-16 23.13.46" style="zoom:50%;" />
+ 出现page fault<img src="/img/user/knowledge/course/xv6-labs/attachments/img202210162313076.png" alt="截屏2022-10-16 23.13.46" style="zoom:50%;" />
 
 
 
@@ -212,7 +212,7 @@ sys_sbrk(void)
 
 * 出现错误，
 
-<img src="http://cdn.zhengyanchen.cn/img202210170958028.png" alt="截屏2022-10-17 09.58.14" style="zoom:33%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202210170958028.png" alt="截屏2022-10-17 09.58.14" style="zoom:33%;" />
 
  这是因为`if((*pte & PTE_V) == 0)`之后继续，所以还有pagetable的叶节点是有效的，所以修改`freewalk`. 
 
@@ -227,7 +227,7 @@ sys_sbrk(void)
 
 到目前为止，已经可以通过`lazytests`,
 
-* <img src="http://cdn.zhengyanchen.cn/img202210202107474.png" alt="截屏2022-10-20 21.07.15" style="zoom:50%;" />
+* <img src="/img/user/knowledge/course/xv6-labs/attachments/img202210202107474.png" alt="截屏2022-10-20 21.07.15" style="zoom:50%;" />
 
 但要通过`usertests`
 
@@ -274,7 +274,7 @@ sys_sbrk(void)
 
 * 这样就可以通过`usertests`
 
-<img src="http://cdn.zhengyanchen.cn/img202210202129700.png" alt="截屏2022-10-20 21.29.30" style="zoom:50%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202210202129700.png" alt="截屏2022-10-20 21.29.30" style="zoom:50%;" />
 
 
 
@@ -282,7 +282,7 @@ sys_sbrk(void)
 
 #### Stack
 
-关于测试stack的部分，我觉得`stacktest`是不够的，因为这里测试只是直接访问了Guard page, 假如说因为无限递归，导致栈指针移动到Guard Page,也会触发页错误，这时候有处理嘛？，并没有。![截屏2022-10-21 11.39.00](http://cdn.zhengyanchen.cn/img202210211139303.png)
+关于测试stack的部分，我觉得`stacktest`是不够的，因为这里测试只是直接访问了Guard page, 假如说因为无限递归，导致栈指针移动到Guard Page,也会触发页错误，这时候有处理嘛？，并没有。![截屏2022-10-21 11.39.00](/img/user/knowledge/course/xv6-labs/attachments/img202210211139303.png)
 
 * 我修改`stacktest`如下
 
@@ -313,7 +313,7 @@ sys_sbrk(void)
 
   可以看到，现在如果出现栈溢出就会直接杀死进程.
 
-  <img src="http://cdn.zhengyanchen.cn/img202210211245721.png" alt="截屏2022-10-21 12.45.29" style="zoom: 50%;" />
+  <img src="/img/user/knowledge/course/xv6-labs/attachments/img202210211245721.png" alt="截屏2022-10-21 12.45.29" style="zoom: 50%;" />
 
 ---
 

@@ -541,11 +541,11 @@ $ echo > a/b
 
  其实我有点奇怪的是`echo`的代码是这样的，只是做了输出而已。它是怎么创建文件的？
 
-<img src="http://cdn.zhengyanchen.cn/img202206191105442.png" alt="截屏2022-06-19 11.05.15" style="zoom: 40%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202206191105442.png" alt="截屏2022-06-19 11.05.15" style="zoom: 40%;" />
 
 稍微思考了，这个操作应该是在`sh.c`做。事实上,`sh.c`也确实这么做了并做了重定向，让文件描述符1重定向到的文件b。
 
-<img src="http://cdn.zhengyanchen.cn/img202206191110226.png" alt="截屏2022-06-19 11.10.44" style="zoom:40%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202206191110226.png" alt="截屏2022-06-19 11.10.44" style="zoom:40%;" />
 
 现在我来重新理解文件描述符：
 

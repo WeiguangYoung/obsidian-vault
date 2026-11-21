@@ -95,11 +95,11 @@ int sysinfo(struct sysinfo *);
 
 首先需要跳到lab2的分支，会出现以下的错误。
 
-![截屏2022-06-23 11.01.12](http://cdn.zhengyanchen.cn/img202206231101099.png)
+![截屏2022-06-23 11.01.12](/img/user/knowledge/course/xv6-labs/attachments/img202206231101099.png)
 
 按它说的，进行以下操作，进行切换就可以了。
 
-![截屏2022-06-23 11.07.10](http://cdn.zhengyanchen.cn/img202206231107860.png)
+![截屏2022-06-23 11.07.10](/img/user/knowledge/course/xv6-labs/attachments/img202206231107860.png)
 
 
 
@@ -269,7 +269,7 @@ int sysinfo(struct sysinfo *);
 
 在写这个函数时，需要学会函数`copyout`的使用。
 
-<img src="http://cdn.zhengyanchen.cn/img202206241904353.png" alt="截屏2022-06-24 19.03.55" style="zoom:33%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202206241904353.png" alt="截屏2022-06-24 19.03.55" style="zoom:33%;" />
 
 在阅读`filestat`函数如何使用`copyout`函数时，发现第三个参数发生了指针类型强制转化，其实这里只是为了和函数的参数类型不发生冲突。
 
@@ -313,7 +313,7 @@ uint64  getfreememory(){
 
 
 
-<img src="http://cdn.zhengyanchen.cn/img202206241912878.png" alt="截屏2022-06-24 19.12.46" style="zoom:33%;" />
+<img src="/img/user/knowledge/course/xv6-labs/attachments/img202206241912878.png" alt="截屏2022-06-24 19.12.46" style="zoom:33%;" />
 
 需要注意一个`page`有4096字节。内存使用链表进行管理，只要遍历一遍链表即可。
 
