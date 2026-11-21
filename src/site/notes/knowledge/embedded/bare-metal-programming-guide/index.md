@@ -118,7 +118,7 @@ MCU通常有许多不同的外设，其中比较简单的就是GPIO（General Pu
 
 例如，GPIOA外设起始地址为0x40020000，我们可以从数据手册8.4节找到GPIO寄存器的描述，上面说 `GPIOA_MODER` 寄存器偏移为0，意味着它的地址是 `0x40020000 + 0`，寄存器地址格式如下：
 
-![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/moder.png)
+<img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/moder.png" style="max-width: 100%" />
 
 数据手册显示MODER这个32位寄存器是由16个2位的值组成。因此，一个MODER寄存器控制16个物理引脚，0-1位控制引脚0，2-3位控制引脚1，以此类推。这个2位的值编码了引脚模式：'00'代表输入，'01'代表输出，'10'代表替代功能——在其它部分进行描述，'11'代表模拟引脚。因为这个外设命名为'GPIOA'，所以对应引脚名为'A0'、'A1'，等等。对于外设'GPIOB'，引脚则对应叫'B0'、'B1'，等等。
 
@@ -1042,15 +1042,15 @@ LED: 0, tick: 1000
 
 现在，运行Ozone，在向导中选择设备：
 
-![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone1.png)
+<img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone1.png" width="50%" />
 
 选择我们要用的调试器硬件：
 
-![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone2.png)
+<img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone2.png" width="50%" />
 
 然后选择 `firmware.elf` 固件文件：
 
-![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone3.png)
+<img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone3.png" width="50%" />
 
 接下来的步骤保持默认，点击“完成”，调试器已经载入（可以看到`hal.h`源码被拾取）：
 
@@ -1067,13 +1067,13 @@ LED: 0, tick: 1000
 我们可以用它直接检查或设置外设的状态，例如，点亮板子上的绿色LED（PB0）：
 
 1. 先使能GPIOB时钟，找到  Peripherals -> RCC -> AHB1ENR，然后把 GPIOBEN 位设为1：
-  ![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone7.png)
+  <img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone7.png" width="75%" />
 
 2. 找到 Peripherals -> GPIO -> GPIOB -> MODER，设置 MODER0 为1（输出）：
-  ![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone8.png)
+  <img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone8.png" width="75%" />
 
 3. 找到 Peripherals -> GPIO -> GPIOB -> ODR，设置 ODR0 为1（高电平）：
-  ![](/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone9.png)
+  <img src="/img/user/knowledge/embedded/bare-metal-programming-guide/images/ozone9.png" width="75%" />
 
 这样绿色LED就被点亮了。愉快地调试吧！
 
