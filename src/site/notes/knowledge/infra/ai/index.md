@@ -27,3 +27,4 @@
 | 03 | [[knowledge/infra/ai/03-Ollama本地部署方案\|03-Ollama本地部署方案]] |
 | 04 | [[knowledge/infra/ai/04-vLLM部署练习手册\|04-vLLM部署练习手册]] |
 | 05 | [[knowledge/infra/ai/05-dsh-superagent-prototype详解\|05-dsh-superagent-prototype详解]] |
+| — | [[knowledge/infra/ai/05-LLM辅助CICD实践\|05-LLM辅助CICD实践]]（AI 辅助 CI/CD） |

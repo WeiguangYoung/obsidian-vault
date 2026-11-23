@@ -639,6 +639,8 @@ CI/CD 平台是这条流水线的"发动机"。选型时主要看两点：**代�
 
 Jenkins 的优势是"什么都能干"——尤其适合需要自定义构建环境（比如交叉编译、License 绑定的 Windows IDE）的场景，这也是嵌入式/汽车行业偏爱它的原因。
 
+> GitLab 流水线落地见 [[knowledge/devops/GitLab-CI-CD\|GitLab CI/CD 实战]]；Jenkins 见 [[knowledge/devops/jenkins/index\|Jenkins 专题]]。
+
 - **CI / CD / CD：三个词的区别** 这三个缩写常被混淆，其实是一条链上的三个位置：
 
 - **CI（持续集成）**：开发者频繁把代码合入主干，每次合入都**自动构建 + 跑测试**，目的是"尽早发现集成问题"——不要等到发布前才发现三周前的改动冲突了。
@@ -851,6 +853,8 @@ GitOps 的核心思想：**把 Git 当作集群状态的"唯一事实源"**。�
 |:----|:------|
 | **ArgoCD** | K8s 原生，Web UI 强大，自动同步 |
 | **Flux CD** | 轻量，Helm 集成好，Git 原语操作 |
+
+> ArgoCD 落地细节与排障见 [[knowledge/devops/ArgoCD-GitOps部署\|ArgoCD + GitOps 部署实战]]。
 
 ```
 开发者 Push 代码 → CI 构建镜像 → 更新部署仓库的 YAML → ArgoCD 检测变更 → 自动同步到集群
