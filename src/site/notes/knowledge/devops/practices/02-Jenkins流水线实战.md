@@ -14,8 +14,8 @@
 | 类别 | 内容 | 典型坑 |
 |:--|:--|:--|
 | [一、DNS / 网络类](#一dns--网络类) | 集群 DNS、跨 VPC、家宽 DNS、Docker Hub / Gradle 墙 | 解析超时反复换点、`--network=host` 下 `--dns` 无效 |
-| [二、Jenkinsfile 语法类（Groovy 陷阱）](#二jenkinsfile-语法类groovy-陷阱) | Groovy/Shell 边界、DSL 符号块、注释闭合、`-x` 不存在的任务、插件步骤缺失 | SUCCESS 假象、到 `post` 块才炸 |
-| [三、构建环境 / Agent 能力类](#三构建环境--agent-能力类) | agent 缺工具、docker.sock、workspace 卷、缓存与 tag、镜像瘦身、兜底路径 | 改了模板没生效、旧镜像/旧 pod 复用 |
+| [二、Jenkinsfile 语法类（Groovy 陷阱）](#二jenkinsfile-语法类groovy-陷阱) | Groovy/Shell 边界、DSL 符号块、注释闭合、引号与变量作用域、参数传递 | SUCCESS 假象、到 `post` 块才炸、写进文件是空值 |
+| [三、构建环境 / Agent 能力类](#三构建环境--agent-能力类) | agent 缺工具、docker.sock、workspace 卷、缓存与 tag、镜像瘦身、**产物污染**、**并行抢 git 锁** | 改了模板没生效、旧镜像/旧 pod 复用、产物混入别的芯片 |
 | [四、脚本逻辑 / Shell 兼容性类](#四脚本逻辑--shell-兼容性类) | glob 无匹配、`grep -c` 双输出、CRLF、Gradle 缓存假绿、门禁阈值 | `set -e` 下兜底写法反而埋雷 |
 | [五、构建状态语义类](#五构建状态语义类) | ABORTED 的两种含义、日志轮转、通知、单点失能 | 把"没跑完"当"跑失败"排 |
 | [六、配置生效与安全注意](#六配置生效与安全注意) | config.xml / GlobalLibraries 落盘位置、XStream、webhook、密钥外泄 | 配置写错位置**静默丢弃** |
@@ -37,6 +37,11 @@
 | 镜像推不动 / 改了 Dockerfile 没生效 | §3.9 §3.10 §3.11 |
 | `No such file or directory: string.h` | §3.7 |
 | `Illegal number` | §4.6 |
+| 构建 SUCCESS 但归档为空 | §2.2 §2.11 |
+| 归档混了别的芯片 / 别的目标的产物 | §3.12 |
+| `build-info.txt` 里版本/分支/日期都是空 | §2.10 |
+| `.git/index.lock: File exists` / `Could not lock repository` | §3.13 |
+| `cannot lock ref` / `is at X but expected Y` | §6.10 |
 | `Finished: ABORTED` | §5.1 §5.4 §5.5 |
 | 报告条数暴涨 / 门禁莫名阻断 | §4.5 §2.7 |
 | 配置改了没生效 / 重启后消失 | §6.1 |
@@ -321,6 +326,91 @@ cat .../warnings-ng/META-INF/MANIFEST.MF   # 13.10258（2026-08，很新）
 
 ---
 
+### 2.10 `sh '''...'''` 里写 `${Groovy变量}` → 不插值，写进文件的都是空值（2026-11-23）
+
+**现象**：多芯片 Job 构建 SUCCESS，但归档里的 `build-info.txt` 六行里五行是空的：
+
+```
+Build version: 
+Build number: 5
+Branch:      
+Build date:  
+```
+
+而 `BUILD_NUMBER` 和 `CHIP` **有值**。
+
+**根因**：三单引号 `'''` 在 Groovy 里**不插值**（与 §2.2 双引号/单引号是同一族问题，但方向相反——§2.2 是「该插值的没插」，这里是「以为会插值的其实不会」）：
+
+```groovy
+sh '''
+    echo "Build version: ${BUILD_VERSION}" | tee -a build-info.txt
+'''
+```
+
+`BUILD_VERSION` / `BUILD_BRANCH` / `BUILD_DATE` 是前序 stage 赋的 **Groovy script 变量**（`BUILD_VERSION = v.version`），不是环境变量 → 三单引号原样把字面量交给 shell → shell 里也没有这个变量 → 展开成空。
+
+**为什么 `BUILD_NUMBER` 有值**：它是 Jenkins 注入的**环境变量**，shell 自己能展开。这正是最迷惑人的地方——**同一个块里有的变量有值、有的没值**，看起来像「偶尔抽风」。
+
+**解决**：改三双引号，并把 shell 命令替换转义（否则 Groovy 先插值）：
+
+```groovy
+sh """
+    echo "Build version: ${BUILD_VERSION}" | tee -a build-info.txt
+    echo "Commit:      \$(git rev-parse HEAD)" | tee -a build-info.txt
+"""
+```
+
+**教训**：四类引号 × 三类变量，混用必炸。速查表：
+
+| 变量来源 | `'...'` | `"..."` | `'''...'''` | `"""..."""` |
+|:--|:--|:--|:--|:--|
+| Groovy script 变量 | ❌ 字面量 | ✅ 插值 | ❌ 字面量 | ✅ 插值 |
+| Jenkins 环境变量 | ✅ shell 展开 | ✅ Groovy 展开 | ✅ shell 展开 | ✅ Groovy 展开 |
+| shell 变量 `$?` `$(...)` | ✅ | ❌ 被 Groovy 抢 | ✅ | ❌ 需 `\$` |
+
+→ **Groovy 变量一律双引号；双引号里要 shell 展开的加 `\` 转义。**
+
+---
+
+### 2.11 读配置的命令漏传参数 → 静默读到默认值（2026-11-23）
+
+**现象**：CI 传 `CHIP=s32k312`，构建 SUCCESS，但归档目录**空的**。
+
+**根因**：读配置那行漏了参数。
+
+```groovy
+sh 'make print-config > .chip-config'      // ❌ 漏了 CHIP
+```
+
+而 `Makefile` 里是 `CHIP ?= s32k144`（带默认值）——这行不报错，**安安静静返回了 s32k144 的配置**：
+
+```
+CI 传 CHIP=s32k312
+→ print-config 返回 CHIP_BUILD_DIR=build/s32k144   ← 错
+→ 实际产物在 build/s32k312                          ← 对
+```
+
+后续 `cp` 去 `build/s32k144` 找文件，那里根本没有产物。
+
+**为什么难查**：`make` **有默认值就不报错**，`print-config` 又只是个 echo 目标，整条链路没有任何异常信号。构建「成功」，只是产物为空。
+
+**解决**：① 补参数；② **加防御**，配置为空立即失败，不要往后走。
+
+```groovy
+sh "make CHIP=${CHIP} print-config > .chip-config"
+// ...
+if (!CHIP_BUILD_DIR?.trim()) {
+    error("print-config 未返回 CHIP_BUILD_DIR（CHIP=${CHIP}）")
+}
+```
+
+**教训**：
+- 凡「从外部命令读配置」的地方，都要验证**读到的是不是本次应有的值**，而不只是「读到了没有」
+- `Makefile` 的 `?=` 默认值在交互式使用时很方便，在 CI 里却是**静默错误源**——参数化 Job 要显式传
+- 与 §2.2 同类：**都表现为「构建绿、产物不对」**
+
+---
+
 ## 三、构建环境 / Agent 能力类
 
 ### 3.1 Docker agent 容器里没有 git → exit 127
@@ -538,6 +628,159 @@ withDockerContainer(args: '-u 0:0 -v /var/run/docker.sock:/var/run/docker.sock',
 - 已踩坑时的止血：确认 ACR 上 digest 已变化 → 清本地同名 tag 后重新 pull
 
 **验证法**：进容器看关键版本（如 `node -v`），或看 pull 日志的 digest 是否变化。
+
+---
+
+### 3.12 `artifacts/` 从不清理 → 多芯片构建产物互相污染（2026-11-23）
+
+**现象**：参数化 Job 切到 `CHIP=s32k312` 构建，SUCCESS，但归档里**两套产物都在**：
+
+```
+UDS_S32K144_Bootloader.elf/.hex/.map   ← 上一轮 CHIP=s32k144 的残留
+UDS_S32K312_Bootloader.elf/.hex/.map   ← 本轮
+```
+
+`checksums.sha256` 里两个 hex 都在：
+
+```
+2fda4460...  UDS_S32K144_Bootloader.hex
+11ddafca...  UDS_S32K312_Bootloader.hex
+```
+
+**根因**：`Makefile` 的 `clean` 只清 `build/`，**不碰 `artifacts/`**：
+
+```makefile
+clean:
+	rm -rf build          # ❌ 不管 artifacts/
+```
+
+而 Jenkins agent **复用同一个 workspace**。换 CHIP 构建时，上一轮产物还躺在 `artifacts/` 里，被 `archiveArtifacts` 的 glob（`artifacts/**/*.elf`）一并收走。
+
+**为什么本地测不出来**：本地验证时每次都手动 `rm -rf artifacts`。**只有真机复用 workspace 才会触发**——这类「缓存目录残留」问题，本地模拟永远代替不了真机。
+
+**危害**：下游按 glob（`*_Bootloader.hex`）取产物会拿到**错的芯片固件**，而且 checksums 校验能通过——这是**静默错误里最难发现的一种**。
+
+**解决**：① 复制前先清空（与 `cp` 放同一条 `sh`，保证顺序）；② 自检升级为「数量 + 身份」双校验。
+
+```groovy
+sh "rm -rf artifacts && mkdir -p artifacts/k8s-linux && cp -f ${CHIP_BUILD_DIR}/*.elf ... "
+```
+
+```bash
+n=$(ls artifacts/k8s-linux/*.elf | wc -l)
+if [ "$n" -ne 1 ]; then
+    echo "ERROR: 应只有 1 个 elf，实际 $n 个："; ls artifacts/k8s-linux/*.elf; exit 1
+fi
+f=$(basename $(ls artifacts/k8s-linux/*.elf))
+if [ "$f" != "${CHIP_TARGET}.elf" ]; then
+    echo "ERROR: 产物名不符 —— 期望 ${CHIP_TARGET}.elf，实际 $f"; exit 1
+fi
+```
+
+**教训**：
+- **「产物存在」≠「产物正确」**。校验必须包含数量与身份，不能只看「有没有文件」
+- 不要指望 `make clean` 清理 CI 目录——它通常只管构建输出；**归档目录要自己清**
+- 自检用 `ls` 而非 `test -f`：实测 `test -f artifacts/*.hex` 匹配到 2 个文件时 bash 报 `binary operator expected`（exit 2），会误判
+- 与 §2.2 同属「SUCCESS 假象」家族，但层次更深：§2.2 是没产物，这里是**产物错了**
+
+---
+
+### 3.13 并行阶段共用 hostPath workspace → 抢 `.git/index.lock`（2026-11-23）
+
+**现象**：构建在 **checkout 阶段**随机失败，35s / 27s 就退出，根本没进编译：
+
+```
+fatal: Unable to create
+  '/home/jenkins/agent/workspace/<job>_main/.git/index.lock': File exists.
+hudson.plugins.git.GitLockFailedException: Could not lock repository
+ERROR: Maximum checkout retry attempts reached, aborting
+```
+
+**我的第一次判断（错的）**：以为「同分支两个构建并发」，于是加了 `disableConcurrentBuilds()`。
+
+**结果：加了之后照样失败。**
+
+**真正的根因**——看日志发现**一次构建里起了两个 pod**：
+
+```
+01:40:30.989Z  Running on <agent-A> in /home/jenkins/agent/workspace/<job>_main
+01:40:30.992Z  Running on <agent-B> in /home/jenkins/agent/workspace/<job>_main
+```
+
+同一秒、**同一路径**。Pod 定义揭示本质：
+
+```yaml
+volumes:
+- hostPath:
+    path: "/home/jenkins/agent"     # workspace 是宿主机目录，不是 emptyDir
+  name: "workspace-volume"
+
+kubernetes.io/hostname: "home-node"  ×2   # 两个 pod 还被钉在同一节点
+```
+
+`linux-build` 和 `codecheck` 是 `parallel{}` 的两条腿，各申请一个 pod，都调度到同一节点，都挂同一个 hostPath，都检出到 `<job>_main` → **同时 checkout 抢 `.git/index.lock`**。
+
+> `disableConcurrentBuilds()` 拦的是「同分支两个**构建**并发」，
+> 拦不住「单次构建内两个**并行阶段**」。这是两个不同层次的问题。
+
+**解决**：给 codecheck 独立 workspace。
+
+```groovy
+stage('codecheck') {
+    agent {
+        docker {
+            image "..."
+            label 'docker-linux'
+            // 按分支隔离（不是按 build number）
+            customWorkspace "/home/jenkins/agent/workspace/codecheck-${env.JOB_NAME.replace('/', '_')}"
+        }
+    }
+}
+```
+
+**为什么按分支而不是按 build**：
+- 按 build 隔离 → 每次全量重拉几十 MB 依赖源码，代价太大
+- 同分支构建已被 `disableConcurrentBuilds()` 串行化，不会自己撞自己
+
+**两者互补**：
+- `disableConcurrentBuilds` → 拦**跨构建**（连点两次、tag + push 双触发）
+- `customWorkspace` → 拦**构建内并行阶段**
+
+**验证**（修复前后对比）：
+
+| 构建 | 结果 | 耗时 | index.lock 错误 |
+|:--|:--|--:|--:|
+| 修复前 | ❌ FAILURE | 27s | 有 |
+| 修复后 #1 | ✅ SUCCESS | 122s | **0** |
+| 修复后 #2 | ✅ SUCCESS | 78s | **0** |
+
+耗时从 27s（checkout 就挂）变成 78~122s（跑完全流程），**这个变化本身就是证据**。
+
+workspace 隔离确认（日志里两条腿的路径）：
+
+```
+workspace/<job>_main                          14 处  ← linux-build
+workspace/codecheck-<job>_main                13 处  ← codecheck
+```
+
+**排查手法**（可复用）：
+
+```bash
+# ① 判断是否一次构建起了多个 pod
+grep -c "is provisioned from template" console.log
+grep "Running on .* in /home" console.log
+
+# ② 确认 workspace 是不是共享存储
+sed -n '/volumes:/,/^---$/p' console.log | grep -A2 "workspace-volume"
+
+# ③ 确认 pod 是否钉在同一节点
+grep -oE 'kubernetes\.io/hostname: "[a-z0-9-]+"' console.log | sort | uniq -c
+```
+
+**教训**：
+- **现象相似不代表根因相同**。「两个 X 抢同一个 Y」这类报错，第一步永远是数清楚 **X 有几个、属于哪个父级**——是一次构建内的两个 pod，还是两次构建各一个
+- 与 §6.10（`cannot lock ref`）看着像（都是 git 并发），但根因不同：§6.10 是**跨构建**撞 push，这里是**构建内并行阶段**撞 workspace
+- 看到「两个 agent 报同一个路径的锁」，先别归因到「两个构建」，去看 Pod YAML
 
 ---
 
