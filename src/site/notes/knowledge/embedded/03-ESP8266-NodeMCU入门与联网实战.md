@@ -120,6 +120,92 @@ sudo usermod -aG dialout $USER   # 避免每次 sudo
 | **ESP8266_RTOS_SDK** | C | ⭐⭐⭐⭐ | 产品级精细控制，见第八章 |
 | ESP8266_NONOS_SDK | C | ⭐⭐⭐⭐ | 无 RTOS，最贴硬件 |
 
+## 2.4 Linux 主机环境依赖（PlatformIO）
+
+无图形界面的 Linux 主机上 Arduino IDE 跑不起来，用 PlatformIO 命令行最省事。以下版本在 Ubuntu 20.04.6 + Python 3.8.10 上实测可用。
+
+### 需要装什么
+
+| 组件 | 版本 | 说明 |
+|:--|:--|:--|
+| PlatformIO Core | 6.1.19 | `pio` 命令本体 |
+| 平台包 | espressif8266 @ 4.2.1 | 板卡定义与构建规则 |
+| Arduino 框架 | framework-arduinoespressif8266 @ 3.30102.0 | ESP8266 Arduino core |
+| 编译器 | toolchain-xtensa @ 2.100300.220621 | Xtensa L106 专用，**不是** ARM 工具链 |
+| 烧录器 | tool-esptoolpy @ 1.30000.201119 | `esptool.py` |
+
+```bash
+pio --version        # PlatformIO Core, version 6.1.19
+pio pkg list -g      # 确认上面几个包都在
+```
+
+首次 `pio run` 会自动补齐缺失的包，直连 registry 慢时挂代理：
+
+```bash
+export https_proxy=http://127.0.0.1:20171 http_proxy=http://127.0.0.1:20171
+```
+
+### 串口权限（最容易卡住的一步）
+
+Linux 下 `/dev/ttyUSB0` 默认 `root:dialout 660`，当前用户不在 `dialout` 组就会 `Permission denied`。
+
+```bash
+groups                            # 看有没有 dialout
+sudo usermod -aG dialout $USER    # 没有就加，加完必须重新登录
+```
+
+比加组更省事的是装 PlatformIO 官方 udev 规则，直接把设备权限设成 `0666`，顺带让 ModemManager 别抢口：
+
+```bash
+curl -fsSL -o /tmp/99-platformio-udev.rules \
+  https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules
+
+sudo cp /tmp/99-platformio-udev.rules /etc/udev/rules.d/
+sudo chown root:root /etc/udev/rules.d/99-platformio-udev.rules
+sudo chmod 644 /etc/udev/rules.d/99-platformio-udev.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+这条规则覆盖的常见 USB 串口芯片：
+
+| 芯片 | VID:PID | 常见模块 |
+|:--|:--|:--|
+| CP2102 / CP2104 | `10c4:ea60` / `10c4:ea70` | NodeMCU V3 板载 |
+| CH340 / CH341 | `1a86:7523` | 大量廉价开发板 |
+| CH343 | `1a86:55d3` / `1a86:55d4` | 新款转接板 |
+
+每条都带 `ENV{ID_MM_DEVICE_IGNORE}="1"`，避免 ModemManager 把串口当调制解调器接管。
+
+### 串口工具
+
+```bash
+sudo apt-get install -y picocom
+picocom -b 115200 /dev/ttyUSB0     # 退出：Ctrl-A 然后 Ctrl-X
+```
+
+`screen /dev/ttyUSB0 115200` 也能用，但退出要 `Ctrl-A K` 再按 `y`，而且不显示原始字节流，`picocom` 干净得多。编译烧录时用 PlatformIO 自带的 `pio device monitor` 更顺手。
+
+### 最小工程
+
+```ini
+; platformio.ini
+[env:nodemcuv2]
+platform = espressif8266
+board = nodemcuv2          ; D1 mini 用 d1_mini，ESP-12F 用 esp12e
+framework = arduino
+monitor_speed = 115200
+upload_speed = 460800
+```
+
+```bash
+pio run                    # 编译
+pio run -t upload          # 烧录
+pio device monitor         # 看串口，Ctrl-] 退出
+```
+
+> ⚠️ 板子不带 USB 转串口芯片时（如 ESP-01），`pio run -t upload` 不会自动进下载模式，需要把 GPIO0 拉低再复位。
+
 ---
 
 # 三、点灯起步

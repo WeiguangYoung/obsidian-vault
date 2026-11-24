@@ -107,6 +107,102 @@ USB-TTL          ESP32-CAM
 
 > 💡 Board 列表里找不到 AI Thinker ESP32-CAM，说明 ESP32 板卡包太旧，升级到 2.x 以上。
 
+## 2.4 主机环境依赖（PlatformIO）
+
+ESP32-CAM 没有板载 USB 转串口，但**主机侧的环境要求与 ESP8266 基本一致**。以下版本在 Ubuntu 20.04.6 上实测可用。
+
+### 需要装什么
+
+| 组件 | 版本 | 说明 |
+|:--|:--|:--|
+| PlatformIO Core | 6.1.19 | `pio` 命令本体 |
+| 平台包 | espressif32 @ 8.0.0 | 板卡定义与构建规则，含 314 个板 |
+| Arduino 框架 | framework-arduinoespressif32 @ 4.30312.261116 | 对应 Arduino core 3.3.12 |
+| 预编译库 | framework-arduinoespressif32-esp32-libs @ 3.3.12 | 含相机驱动，约 184 MB |
+| 编译器（Xtensa）| toolchain-xtensa-esp-elf @ 14.2.0 | ESP32 / S2 / S3 |
+| 编译器（RISC-V）| toolchain-riscv32-esp @ 14.2.0 | C3 / C6 / H2 |
+
+```bash
+pio --version        # PlatformIO Core, version 6.1.19
+pio pkg list -g
+```
+
+### 相机驱动不用另外装
+
+这是最容易走弯的一步：`esp_camera.h` 已经随 `esp32-libs` 装好了，**不要再往 `lib_deps` 里加 `esp32-camera`**，否则会与内置版本冲突。
+
+```
+framework-arduinoespressif32-esp32-libs/
+  include/espressif__esp32-camera/driver/include/esp_camera.h
+  lib/libespressif__esp32-camera.a        ← 已预编译
+```
+
+同理，`framework-espidf` 也不用装：本例走 Arduino 框架，完全不碰 IDF。
+
+### 串口权限
+
+与 ESP8266 完全相同，装 PlatformIO 官方 udev 规则最省事（直接给 `0666`）：
+
+```bash
+curl -fsSL -o /tmp/99-platformio-udev.rules \
+  https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/system/99-platformio-udev.rules
+
+sudo cp /tmp/99-platformio-udev.rules /etc/udev/rules.d/
+sudo chown root:root /etc/udev/rules.d/99-platformio-udev.rules
+sudo chmod 644 /etc/udev/rules.d/99-platformio-udev.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+ESP32-CAM 用 CP2102 或 CH340 转接板（`10c4:ea60` / `1a86:7523`），都在规则覆盖范围内。
+
+### 串口工具
+
+```bash
+sudo apt-get install -y picocom
+picocom -b 115200 /dev/ttyUSB0     # 退出：Ctrl-A 然后 Ctrl-X
+```
+
+看启动日志时特别有用：ESP32-CAM 上电会打印分区表、PSRAM 大小、`Brownout` 报警，`picocom` 逐行显示不会丢。
+
+### 最小工程
+
+```ini
+; platformio.ini
+[env:esp32cam]
+platform = espressif32
+board = esp32cam
+framework = arduino
+monitor_speed = 115200
+upload_speed = 460800
+board_build.flash_mode = dio
+```
+
+```bash
+pio run                    # 编译
+pio run -t upload          # 烧录
+pio device monitor         # 看串口，Ctrl-] 退出
+```
+
+### 板卡定义里已经配好的项
+
+`board = esp32cam` 不是空壳，它替你设了这些，**不要手动覆盖**：
+
+| 项 | 值 | 作用 |
+|:--|:--|:--|
+| `-DBOARD_HAS_PSRAM` | 已开启 | 不写这行，SVGA 以上会失败 |
+| `-mfix-esp32-psram-cache-issue` | 已开启 | 规避 ESP32 PSRAM 的 cache bug |
+| `partitions` | `huge_app.csv` | app 3MB，能装下 CameraWebServer |
+| `flash_mode` | `dio` | 板上 flash 就是 DIO 接法 |
+
+⚠️ 如果自己改分区表，把 app 分区做到 2MB 以下，会撞 `text section exceeds available space in board`。
+
+### 两条硬件侧的限制（软件补不了）
+
+**没有板载 USB。** 必须外接 USB-TTL 转接板，且 PlatformIO 的自动复位对这块板无效（DTR/RTS 没接到 EN/IO0）。烧录时需手动把 GPIO0 接 GND 再复位；串口会停在 `Connecting........`。
+
+**供电必须给足。** 摄像头启动瞬间 300mA+，WiFi 发射再加 200mA，USB-TTL 的 5V 引脚常常供不住，表现是反复 `Brownout detector was triggered`。用外部 5V 或单独 LDO，并在 5V/GND 间并 100µF 以上电容。
+
 ---
 
 # 三、跑通官方例程
