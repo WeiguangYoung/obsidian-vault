@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/embedded/07-ESP32C3做CAN与UDS对端节点/","title":"ESP32-C3 做 CAN 与 UDS 对端节点","tags":["ESP32-C3","RISC-V","TWAI","CAN","UDS","ISO-TP","ISO15765","ISO14229","ESP-IDF","诊断","对端节点","嵌入式"],"dg-note-properties":{"title":"ESP32-C3 做 CAN 与 UDS 对端节点","date":"2026-11-24","tags":["ESP32-C3","RISC-V","TWAI","CAN","UDS","ISO-TP","ISO15765","ISO14229","ESP-IDF","诊断","对端节点","嵌入式"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/04-ESP32C3做CAN与UDS对端节点/","title":"ESP32-C3 做 CAN 与 UDS 对端节点","tags":["ESP32-C3","RISC-V","TWAI","CAN","UDS","ISO-TP","ISO15765","ISO14229","ESP-IDF","诊断","对端节点","嵌入式"],"dg-note-properties":{"title":"ESP32-C3 做 CAN 与 UDS 对端节点","date":"2026-11-24","tags":["ESP32-C3","RISC-V","TWAI","CAN","UDS","ISO-TP","ISO15765","ISO14229","ESP-IDF","诊断","对端节点","嵌入式"]}}
 ---
 
 
@@ -91,7 +91,7 @@
 | 合计 | | **约 ¥28** | |
 
 > 硬件细节（芯片 rev、Flash 颗粒、串口桥型号、32 脚定义、40MHz DIO 的由来）见
-> [[knowledge/embedded/08-ESP32C3烧录与裸机固件实战\|08 烧录与裸机固件实战]]，本文只取与 CAN 相关的部分。
+> [[knowledge/embedded/05-ESP32C3烧录与裸机固件实战\|05 烧录与裸机固件实战]]，本文只取与 CAN 相关的部分。
 
 ### 本板实测：串口桥是 CH343，没有原生 USB-JTAG
 
@@ -1245,5 +1245,5 @@ GPIO5  (P6) ───────── CRX
 | 诊断协议 | ISO 14229-1（UDS）· ISO 15765-2（ISO-TP）· ISO 15765-4（CAN 诊断） |
 | CAN 基础 | [[knowledge/embedded/03-ZLG-CAN库与UDS刷写详解\|ZLG CAN 库与 UDS 刷写详解]] 第二至四章 |
 | ISO-TP 参考实现 | 同文档第七章「用 ZLG 盒子做 UDS 刷写」的分包/拆包代码 |
-| **本板硬件实测** | [[knowledge/embedded/08-ESP32C3烧录与裸机固件实战\|08 烧录与裸机固件实战]]（引脚表、flash 40MHz DIO、CH343） |
+| **本板硬件实测** | [[knowledge/embedded/05-ESP32C3烧录与裸机固件实战\|05 烧录与裸机固件实战]]（引脚表、flash 40MHz DIO、CH343） |
 | 裸机方法论 | [[knowledge/embedded/02-裸机编程指南\|裸机编程指南（cpq）]] |
