@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/robotics/03-colcon构建体系/","title":"colcon 构建体系深挖","tags":["ROS2","colcon","ament","构建系统","依赖图","overlay","CI"],"dg-note-properties":{"title":"colcon 构建体系深挖","date":"2026-11-07","tags":["ROS2","colcon","ament","构建系统","依赖图","overlay","CI"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/robotics/03-colcon构建体系/","title":"colcon 构建体系深挖","tags":["ROS2","colcon","ament","构建系统","依赖图","overlay","CI"],"dg-note-properties":{"title":"colcon 构建体系深挖","date":"2026-11-07","tags":["ROS2","colcon","ament","构建系统","依赖图","overlay","CI"]}}
 ---
 
 
@@ -295,7 +295,7 @@ rosdep install --from-paths src --ignore-src -r -y
 # -y  自动确认
 ```
 
-> 注意 rosdep 的 `index-v4.yaml` 需要 `ROSDISTRO_INDEX_URL` 镜像，见 [[knowledge/robotics/01-环境搭建\|01-环境搭建]] §2.4。
+> 注意 rosdep 的 `index-v4.yaml` 需要 `ROSDISTRO_INDEX_URL` 镜像，见 [[knowledge/embedded/robotics/01-环境搭建\|01-环境搭建]] §2.4。
 
 ---
 
@@ -344,7 +344,7 @@ colcon test --packages-above robot_interfaces
 
 ## 相关文档
 
-- [[knowledge/robotics/01-环境搭建\|01-环境搭建]] — 环境基线
-- [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] — 节点与 URDF
+- [[knowledge/embedded/robotics/01-环境搭建\|01-环境搭建]] — 环境基线
+- [[knowledge/embedded/robotics/02-节点通信与TF2\|02-节点通信与TF2]] — 节点与 URDF
 - [[knowledge/embedded/01-编译链接装载与库\|编译、链接、装载与库]] — CMake 底层原理
-- [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划
+- [[knowledge/embedded/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划

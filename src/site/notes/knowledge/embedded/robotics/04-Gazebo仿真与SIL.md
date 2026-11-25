@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/robotics/04-Gazebo仿真与SIL/","title":"Gazebo 仿真与 SIL 闭环","tags":["ROS2","Gazebo","Fortress","SIL","仿真回归","CI门禁","机器人"],"dg-note-properties":{"title":"Gazebo 仿真与 SIL 闭环","date":"2026-11-07","tags":["ROS2","Gazebo","Fortress","SIL","仿真回归","CI门禁","机器人"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/robotics/04-Gazebo仿真与SIL/","title":"Gazebo 仿真与 SIL 闭环","tags":["ROS2","Gazebo","Fortress","SIL","仿真回归","CI门禁","机器人"],"dg-note-properties":{"title":"Gazebo 仿真与 SIL 闭环","date":"2026-11-07","tags":["ROS2","Gazebo","Fortress","SIL","仿真回归","CI门禁","机器人"]}}
 ---
 
 
@@ -15,7 +15,7 @@
 
 **最大的坑**：headless 环境下 `Sensors` 系统插件会导致整个 Gazebo 服务端卡死 —— 这个问题会浪费几个小时，第 6 章有完整的定位过程。
 
-> ⚠️ **重要后续**：本文 §6 当时把根因归为「headless 不需要渲染」，结论是禁用传感器。**2026-11-08 装完 NVIDIA 驱动后证明这个判断不完整** —— 真正原因是机器缺 GPU 驱动，`ogre2` 拿不到渲染上下文。**有显卡的机器装好驱动后，Sensors 插件完全正常，激光雷达和相机都能跑**（见 [[knowledge/robotics/01-环境搭建\|环境搭建（含 GPU 附录）]]）。§6 保留作排查方法论，但结论已被修正。
+> ⚠️ **重要后续**：本文 §6 当时把根因归为「headless 不需要渲染」，结论是禁用传感器。**2026-11-08 装完 NVIDIA 驱动后证明这个判断不完整** —— 真正原因是机器缺 GPU 驱动，`ogre2` 拿不到渲染上下文。**有显卡的机器装好驱动后，Sensors 插件完全正常，激光雷达和相机都能跑**（见 [[knowledge/embedded/robotics/01-环境搭建\|环境搭建（含 GPU 附录）]]）。§6 保留作排查方法论，但结论已被修正。
 
 ---
 
@@ -430,7 +430,7 @@ max_duration = target / speed * 1.5   # 理论耗时 × 1.5
 
 ## 相关文档
 
-- [[knowledge/robotics/01-环境搭建\|01-环境搭建]] — 环境基线（含 headless 基础验证）
-- [[knowledge/robotics/02-节点通信与TF2\|02-节点通信与TF2]] — 节点与 URDF
-- [[knowledge/robotics/03-colcon构建体系\|03-colcon构建体系]] — 构建与增量
-- [[knowledge/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划
+- [[knowledge/embedded/robotics/01-环境搭建\|01-环境搭建]] — 环境基线（含 headless 基础验证）
+- [[knowledge/embedded/robotics/02-节点通信与TF2\|02-节点通信与TF2]] — 节点与 URDF
+- [[knowledge/embedded/robotics/03-colcon构建体系\|03-colcon构建体系]] — 构建与增量
+- [[knowledge/embedded/robotics/00-机器人入门路线\|00-机器人入门路线]] — 路线规划

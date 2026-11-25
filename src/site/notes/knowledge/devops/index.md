@@ -25,7 +25,7 @@
 | 七、AI 赋能 DevOps（AIOps） |
 
 > 行业方向（汽车 / 机器人）见 [[knowledge/devops/industry/00-行业对比\|🏭 行业对比]]。
-> 机器人方向实操记录见 [[knowledge/robotics/index\|🤖 机器人实现]]。
+> 机器人方向实操记录见 [[knowledge/embedded/robotics/index\|🤖 机器人实现]]。
 
 ---
 
