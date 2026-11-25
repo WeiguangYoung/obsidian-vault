@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/devops/practices/07-制品管理与Harbor实战/","title":"制品管理与 Harbor 实战","tags":["DevOps","制品管理","制品仓库","Harbor","Nexus","Artifactory","Trivy","镜像仓库","供应链安全","生命周期管理","面试"],"dg-note-properties":{"title":"制品管理与 Harbor 实战","date":"2026-10-20","updated":"2026-11-06","tags":["DevOps","制品管理","制品仓库","Harbor","Nexus","Artifactory","Trivy","镜像仓库","供应链安全","生命周期管理","面试"]}}
+{"dg-publish":true,"permalink":"/knowledge/devops/practices/08-制品管理与Harbor实战/","title":"制品管理与 Harbor 实战","tags":["DevOps","制品管理","制品仓库","Harbor","Nexus","Artifactory","Trivy","镜像仓库","供应链安全","生命周期管理","面试"],"dg-note-properties":{"title":"制品管理与 Harbor 实战","date":"2026-10-20","updated":"2026-11-06","tags":["DevOps","制品管理","制品仓库","Harbor","Nexus","Artifactory","Trivy","镜像仓库","供应链安全","生命周期管理","面试"]}}
 ---
 
 
@@ -72,7 +72,7 @@
 
 | 场景 | 工具 | 延伸阅读 |
 |:----|:----|:----|
-| C/C++ 通用 | CMake、Make、Ninja、**Bazel**、Gradle（Android） | [[knowledge/embedded/01-嵌入式软件构建流程\|嵌入式软件构建流程]] |
+| C/C++ 通用 | CMake、Make、Ninja、**Bazel**、Gradle（Android） | [[knowledge/embedded/01-编译链接装载与库\|编译、链接、装载与库]] |
 | 嵌入式交叉编译 | GCC ARM、IAR、Keil、AUTOSAR 工具链 | [[knowledge/devops/industry/01-汽车行业专题\|汽车专题（AUTOSAR 构建）]] |
 | 机器人 | colcon（ROS2）、catkin | [[knowledge/devops/industry/02-机器人行业专题\|机器人专题（ROS2 集成构建）]] |
 | 模型驱动 | MATLAB/Simulink 代码生成 | `industry/` （Simulink/MBD 内容待补） |

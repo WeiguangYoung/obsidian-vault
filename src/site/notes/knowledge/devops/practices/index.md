@@ -5,7 +5,7 @@
 
 # 🛠️ 实战演练 · 目录导航
 
-> 落地实战：Jenkins（部署/迁移/排障）→ CI 工程化（版本规范 + GitLab CI + ci-lib）→ k3s 集群 → 网关与告警 → 构建系统（CMake/Bazel）→ 制品与 Harbor → AIOps 排障
+> 落地实战：Jenkins（部署/迁移/排障）→ CI 工程化（版本规范 + GitLab CI + ci-lib）→ CMake 嵌入式工程 → Bazel 改造 → k3s 集群 → 网关与告警 → 制品与 Harbor → AIOps 排障
 > 全部按「问题 → 根因 → 解决」组织，可直接照做复现。
 
 返回 [[首页\|🏠 首页]]
@@ -17,9 +17,9 @@
 | 类别 | 文档 |
 |:--|:--|
 | **CI/CD 主线** | 01 Jenkins 部署迁移 · 02 Jenkins 排障 · 03 CI 工程化 |
-| **集群运维** | 04 k3s 集群 · 05 网关与告警 |
-| **构建与制品** | 06 CMake/Bazel · 07 制品管理与 Harbor |
-| **专项** | 08 AIOps 排障 |
+| **构建系统** | **05 CMake 嵌入式工程** · 06 Bazel 改造 |
+| **集群运维** | 04 k3s 集群 · 07 网关与告警 |
+| **制品与专项** | 08 制品管理与 Harbor · 09 AIOps 排障 |
 
 ---
 
@@ -31,10 +31,11 @@
 | 02 | [[knowledge/devops/practices/02-Jenkins流水线实战\|02-Jenkins流水线实战]] | **排障案例库**：50+ 条按问题分类，DNS/语法/Agent/Shell/状态/配置六大类 |
 | 03 | [[knowledge/devops/practices/03-CI工程化实战\|03-CI工程化实战]] | 版本发布规范（SemVer/GitFlow/门禁）+ GitLab CI 双平台对比 + ci-lib 共享库 |
 | 04 | [[knowledge/devops/practices/04-k3s集群部署实战\|04-k3s集群部署实战]] | 三节点跨地域集群 + WireGuard 统一平面 + 监控栈 + 问题速查 19 条 |
-| 05 | [[knowledge/devops/practices/05-网关与告警接入实战\|05-网关与告警接入实战]] | APISIX 网关迁移（含 RCE 事件）+ Alertmanager 告警出口 + 节点安全审计 |
+| 05 | [[knowledge/devops/practices/05-构建系统实战-CMake\|CMake 工程实战：四个真实项目的经验总结]] | 基于 cmake-learn / ros2-ci-demo / esp32c3-demo / sherpa-onnx-cpp 的真实代码与提交历史：可见性传播、三种交叉编译、3 个事故复盘（缓存不清理 / 产物入库 / 工具链静默失效）、链接期依赖、包导出、检查清单 |
 | 06 | [[knowledge/devops/practices/06-构建系统实战-Bazel\|Bazel 构建改造实战]] | Bazel 改造全流程：MODULE/BUILD、4 个坑、Makefile 对照、远程缓存、toolchain 卡点 |
-| 07 | [[knowledge/devops/practices/07-制品管理与Harbor实战\|07-制品管理与Harbor实战]] | 制品管理全景（工具选型/命名规范/生命周期）+ Harbor 实战（RBAC/漏洞门禁/GC/CI 集成） |
-| 08 | [[knowledge/devops/practices/08-AI-Agent辅助CI排障实战\|08-AI-Agent辅助CI排障实战]] | 把 CI 失败日志喂给 LLM 做根因定位，含 RAG 设计与实测 |
+| 07 | [[knowledge/devops/practices/07-网关与告警接入实战\|07-网关与告警接入实战]] | APISIX 网关迁移（含 RCE 事件）+ Alertmanager 告警出口 + 节点安全审计 |
+| 08 | [[knowledge/devops/practices/08-制品管理与Harbor实战\|08-制品管理与Harbor实战]] | 制品管理全景（工具选型/命名规范/生命周期）+ Harbor 实战（RBAC/漏洞门禁/GC/CI 集成） |
+| 09 | [[knowledge/devops/practices/09-AI-Agent辅助CI排障实战\|09-AI-Agent辅助CI排障实战]] | 把 CI 失败日志喂给 LLM 做根因定位，含 RAG 设计与实测 |
 
 ---
 

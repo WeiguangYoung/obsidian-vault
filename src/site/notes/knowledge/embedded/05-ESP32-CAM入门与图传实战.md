@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/embedded/04-ESP32-CAM入门与图传实战/","title":"ESP32-CAM 入门与图传实战","tags":["ESP32-CAM","OV2640","摄像头","图传","MJPEG","SD卡","Arduino","嵌入式","监控"],"dg-note-properties":{"title":"ESP32-CAM 入门与图传实战","date":"2026-11-14","tags":["ESP32-CAM","OV2640","摄像头","图传","MJPEG","SD卡","Arduino","嵌入式","监控"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/05-ESP32-CAM入门与图传实战/","title":"ESP32-CAM 入门与图传实战","tags":["ESP32-CAM","OV2640","摄像头","图传","MJPEG","SD卡","Arduino","嵌入式","监控"],"dg-note-properties":{"title":"ESP32-CAM 入门与图传实战","date":"2026-11-14","tags":["ESP32-CAM","OV2640","摄像头","图传","MJPEG","SD卡","Arduino","嵌入式","监控"]}}
 ---
 
 
@@ -476,4 +476,4 @@ if (psramFound()) {
 
 ## 相关文档
 
-- `03-ESP8266-NodeMCU入门与联网实战` — 打好 GPIO/WiFi 基础
+- `04-ESP8266-NodeMCU入门与联网实战` — 打好 GPIO/WiFi 基础

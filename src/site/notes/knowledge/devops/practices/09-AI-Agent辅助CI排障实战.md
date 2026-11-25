@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/devops/practices/08-AI-Agent辅助CI排障实战/","tags":["DevOps","AIOps","LLM","CI/CD","Jenkins","排障","RAG","实战"],"dg-note-properties":{"date":"2026-09-22","tags":["DevOps","AIOps","LLM","CI/CD","Jenkins","排障","RAG","实战"]}}
+{"dg-publish":true,"permalink":"/knowledge/devops/practices/09-AI-Agent辅助CI排障实战/","tags":["DevOps","AIOps","LLM","CI/CD","Jenkins","排障","RAG","实战"],"dg-note-properties":{"date":"2026-09-22","tags":["DevOps","AIOps","LLM","CI/CD","Jenkins","排障","RAG","实战"]}}
 ---
 
 

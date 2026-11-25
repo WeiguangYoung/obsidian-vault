@@ -8,7 +8,7 @@
 > 开源仓库 [`ttroy50/cmake-examples`](https://github.com/ttroy50/cmake-examples) 的完整学习笔记（13k+ ⭐，MIT 许可）。
 > 7 个章节、**27 个可运行代码示例**（另有 3 个纯文档说明目录），从最小骨架一路讲到包管理。
 
-返回 [[首页\|🏠 首页]] · 相关：[[knowledge/embedded/01-嵌入式软件构建流程\|嵌入式软件构建流程]] · [[knowledge/embedded/02-CMake工程实战-嵌入式固件七能力\|CMake 工程实战]]
+返回 [[首页\|🏠 首页]] · 相关：[[knowledge/embedded/01-编译链接装载与库\|编译、链接、装载与库]] · [[knowledge/devops/practices/05-构建系统实战-CMake\|CMake 工程实战]]
 
 ---
 
@@ -191,7 +191,7 @@ cd cmake-examples && ./test.sh
 | 文档 | 定位 |
 |:--|:--|
 | **本目录（cmake-examples）** | 逐章逐例精读外部教程，打语法地基 |
-| [[knowledge/embedded/01-嵌入式软件构建流程\|嵌入式软件构建流程]] | 嵌入式视角：交叉编译、AUTOSAR、STM32 双目标、单元测试接入 |
-| [[knowledge/embedded/02-CMake工程实战-嵌入式固件七能力\|CMake 工程实战]] | 完整可跑工程：交叉编译、链接脚本、后处理、闭源库集成 |
+| [[knowledge/embedded/01-编译链接装载与库\|编译、链接、装载与库]] | 工具链原理：编译四阶段、ELF 段结构、符号解析与重定位、链接脚本、装载、静态/动态库 |
+| [[knowledge/devops/practices/05-构建系统实战-CMake\|CMake 工程实战]] | 完整可跑工程：交叉编译、链接脚本、后处理、闭源库集成 |
 
 学习路径建议：**先读本目录 01 章打基础 → 再读 02 看嵌入式落地 → 最后读 06 看完整工程组织**。

@@ -8,7 +8,7 @@
 > 把 hello-jenkins 工程的纯 C 部分（`UDS_ProtocolStack` + CUnit 单元测试）从 Makefile 迁到 Bazel 的完整记录。
 > 含 MODULE.bazel/BUILD.bazel 改造、4 个踩坑、与 Makefile 的实测耗时对照、远程缓存部署、交叉编译 toolchain 卡点复盘。
 
-返回 [[首页\|🏠 首页]] · 相关：[[knowledge/devops/practices/06-构建系统实战-CMake\|CMake 工程实战]] · [[knowledge/embedded/01-嵌入式软件构建流程\|嵌入式软件构建流程]]
+返回 [[首页\|🏠 首页]] · 相关：[[knowledge/devops/practices/05-构建系统实战-CMake\|CMake 工程实战]] · [[knowledge/embedded/01-编译链接装载与库\|编译、链接、装载与库]]
 
 ---
 

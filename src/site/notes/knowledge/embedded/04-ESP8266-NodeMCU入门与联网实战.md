@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/embedded/03-ESP8266-NodeMCU入门与联网实战/","title":"ESP8266 NodeMCU 入门与联网实战","tags":["ESP8266","NodeMCU","Arduino","ESP8266_RTOS_SDK","FreeRTOS","idf.py","GPIO","PWM","LEDC","ADC","WiFi","WebServer","OLED","SSD1306","U8g2","天气","嵌入式","物联网"],"dg-note-properties":{"title":"ESP8266 NodeMCU 入门与联网实战","date":"2026-11-14","tags":["ESP8266","NodeMCU","Arduino","ESP8266_RTOS_SDK","FreeRTOS","idf.py","GPIO","PWM","LEDC","ADC","WiFi","WebServer","OLED","SSD1306","U8g2","天气","嵌入式","物联网"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/04-ESP8266-NodeMCU入门与联网实战/","title":"ESP8266 NodeMCU 入门与联网实战","tags":["ESP8266","NodeMCU","Arduino","ESP8266_RTOS_SDK","FreeRTOS","idf.py","GPIO","PWM","LEDC","ADC","WiFi","WebServer","OLED","SSD1306","U8g2","天气","嵌入式","物联网"],"dg-note-properties":{"title":"ESP8266 NodeMCU 入门与联网实战","date":"2026-11-14","tags":["ESP8266","NodeMCU","Arduino","ESP8266_RTOS_SDK","FreeRTOS","idf.py","GPIO","PWM","LEDC","ADC","WiFi","WebServer","OLED","SSD1306","U8g2","天气","嵌入式","物联网"]}}
 ---
 
 
@@ -1404,4 +1404,4 @@ Serial.println(body.substring(0, 300));   // 只用调试，吃内存
 
 ## 相关文档
 
-- `04-ESP32-CAM入门与图传实战` — 进阶到带摄像头的双核板
+- `05-ESP32-CAM入门与图传实战` — 进阶到带摄像头的双核板

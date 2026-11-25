@@ -17,16 +17,16 @@
 | 章节 | 内容 |
 |:--|:--|
 | 一、为什么需要自建对端节点 | 与 ZLG / 真 ECU 的对比 |
-| 二、硬件选型与接线 | 收发器选择、引脚分配、三个致命坑 |
-| 三、开发环境 | ESP-IDF 安装与工程创建 |
+| 二、硬件选型与接线 | 收发器选择、**本板实测引脚位置**、三个致命坑 |
+| 三、开发环境 | ESP-IDF 安装、**flash 40MHz DIO 锁定**、工程创建 |
 | 四、TWAI 驱动层 | 初始化、三种模式、状态监控 |
 | 五、UDS 服务层 | 服务分发、肯定/否定响应构造 |
 | 六、ISO-TP 多帧 | SF/FF/CF/FC 四种 PCI 与实现 |
 | 七、时序参数 | P2 / P2* / S3 三个必做项 |
 | 八、联调四步走 | 从单板自测到与真实 ECU 握手 |
 | 九、故障注入压测 | 这是自建对端最核心的价值 |
-| 十、坑清单 | 十条实战经验 |
-| 十一、工程骨架 | 目录结构与 CMakeLists |
+| 十、坑清单 | 协议层 14 条 + **板级 8 条（实测）** |
+| 十一、工程骨架 | 目录结构、CMakeLists、sdkconfig |
 | 十二、一页速查 | 表格总结 |
 
 ---
@@ -84,11 +84,28 @@
 
 | 件 | 型号 | 价格 | 说明 |
 |:--|:--|:--:|:--|
-| 主控 | ESP32-C3（如 SuperMini / DevKitM-1） | ¥17.64 | 内置 TWAI + USB-Serial-JTAG |
+| 主控 | **ESP32-C3 核心板**（丝印 `ESP32C3 / V1.0.0 / LuatOS`） | ¥17.64 | 内置 TWAI；**4MB Flash / rev v0.4** |
 | 收发器 | **SN65HVD230** | ¥10 | ⚠️ 必须 3.3V 版本 |
 | 终端电阻 | 120Ω ×2 | ¥1 | 总线两端各一个 |
 | 杜邦线 | 若干 | — | — |
 | 合计 | | **约 ¥28** | |
+
+> 硬件细节（芯片 rev、Flash 颗粒、串口桥型号、32 脚定义、40MHz DIO 的由来）见
+> [[knowledge/embedded/08-ESP32C3烧录与裸机固件实战\|08 烧录与裸机固件实战]]，本文只取与 CAN 相关的部分。
+
+### 本板实测：串口桥是 CH343，没有原生 USB-JTAG
+
+这一点直接影响调试方式，必须先说清。
+
+| 项 | 实测值 | 影响 |
+|:--|:--|:--|
+| 串口桥 | **CH343**（`1a86:55d3`）→ `/dev/ttyACM0` | 只能看 `printf`，**不能断点调试** |
+| 原生 USB-JTAG | ❌ 无（Type-C 直连 CH343，接的是 UART0） | 想用 JTAG 得外接 `GPIO18/19` |
+| Flash | 4 MB（颗粒 MXIC） | 分区表要按 4MB 配 |
+| 晶振 | 40 MHz | TWAI 位定时基准就是它 |
+
+> ⚠️ `/dev/ttyACM0` 这个节点名有歧义：`303a:1001` 是乐鑫原生 USB-JTAG，`1a86:55d3` 是 CH343。
+> 用 `lsusb` 看 VID 才能确定是哪条路。
 
 ### ⚠️ 收发器绝对是 3.3V 那颗
 
@@ -108,36 +125,50 @@
 ```
 ESP32-C3                    SN65HVD230 模块
 ────────                    ───────────────
-3V3       ────────────────► VCC   (3.3V)
-GND       ────────────────► GND
-GPIO4     ────────────────► CTX / TXD   (C3 发 → 收发器收)
-GPIO5     ────────────────► CRX / RXD   (C3 收 ← 收发器发)
+3V3  (P7 或 P15/P20) ─────► VCC   (3.3V)
+GND  (P1/P8/P16/P19/P26/P32) ► GND
+GPIO4 (P5)  ───────────────► CTX / TXD   (C3 发 → 收发器收)
+GPIO5 (P6)  ───────────────► CRX / RXD   (C3 收 ← 收发器发)
                             CANH ──┬──── 总线 CANH
                             CANL ──┴──── 总线 CANL
                             Rs   ─────── GND   (高速模式)
 ```
 
-### 引脚分配的禁区
+**本板引脚位置已核对**（左排，P1 在 USB 口一端）：
+
+| 信号 | 位号 | 位置 |
+|:--|:--:|:--|
+| `GPIO4` (TX) | **P5** | 左排第 5 |
+| `GPIO5` (RX) | **P6** | 左排第 6 |
+| `3.3V` | P7 / P15 / P20 | 三处都可用 |
+| `GND` | P1 / P8 / P16 / P19 / P26 / P32 | 六处都可用 |
+
+> ✅ `GPIO4/5` 在本板上**完全空闲**，没被 LED 或按键占用，可放心用。
+
+### 引脚分配的禁区（本板实测位号）
 
 ESP32-C3 的 TWAI 通过 GPIO Matrix 路由，**几乎任意引脚都能映射**，但要避开这些：
 
-| 引脚 | 用途 | 后果 |
-|:--|:--|:--|
-| `GPIO11` | VDD_SPI（Flash 供电） | 改了会掉 Flash |
-| `GPIO12–17` | 封装内 Flash（SPI0/1） | 完全不可用 |
-| `GPIO18/19` | USB-Serial-JTAG | 占用后无法烧录/调试 |
-| `GPIO20/21` | UART0（默认日志口） | 占用后看不到 printf |
-| `GPIO2/8/9` | strapping 脚（9=BOOT） | 上电电平影响启动模式 |
+| 引脚 | 位号 | 用途 | 后果 |
+|:--|:--:|:--|:--|
+| `GPIO11` | P9 | VDD_SPI（Flash 供电） | 输出低会断 Flash 供电 → 死机 |
+| `GPIO12` | P29 | `SPIHD` | 已被封装内 Flash 占用 |
+| `GPIO13` | P23 | `SPIWP` | 已被封装内 Flash 占用 |
+| `GPIO18/19` | P28/P27 | 原生 USB-Serial-JTAG | 占用后失去原生 USB（本板本来就没接） |
+| `GPIO20/21` | P24/P25（丝印 TX0/RX0） | UART0 控制台 | 占用后看不到 `printf` |
+| `GPIO2/8/9` | P14/P4/P3 | strapping（9 = BOOT） | 上电电平影响启动模式 |
+| `P18` | P18 | **PWR**（3.3V 供电使能，高有效） | ⚠️ 不是 PWM！拉低等于断电 |
 
 推荐组合：
 
 | TX | RX | 备注 |
 |:--:|:--:|:--|
-| `GPIO4` | `GPIO5` | 最常用，多数板子这两个都引出了 |
-| `GPIO6` | `GPIO7` | 备选 |
-| `GPIO0` | `GPIO1` | 注意 0 是 strapping，谨慎 |
+| **`GPIO4`** | **`GPIO5`** | ✅ **本文采用**，本板 P5/P6，实测空闲 |
+| `GPIO6` | `GPIO7` | 备选，P11/P10 |
+| `GPIO0` | `GPIO1` | 谨慎，P31/P30，0 是 strapping |
 
-> 上板前先看自己板子的丝印 / 引脚图，确认 `GPIO4/5` 没被 RGB LED、按键之类占用。
+> ⚠️ **P24/P25 的中文丝印只写「TX0/RX0」，没写对应 GPIO20 还是 GPIO21**，焊盘到芯片引脚的映射仍需实测。
+> 这也是本文建议用 `GPIO4/5` 走矩阵重映射、而不去碰那对针的原因。
 
 ### 三个致命坑
 
@@ -191,29 +222,58 @@ cd uds-peer
 idf.py set-target esp32c3
 ```
 
-### 关键 menuconfig 项
+### 烧录配置必须写进 sdkconfig.defaults
 
-```bash
-idf.py menuconfig
+这是本文最容易被忽略、却最容易卡住你半天的一节。
+
+```ini
+CONFIG_IDF_TARGET="esp32c3"
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 ```
 
-必须确认：
+⚠️ **flash 必须 40MHz DIO，不能默认的 80MHz**
 
-| 路径 | 设置 |
-|:--|:--|
-| `Component config → ESP-TWAI` | `Enable TWAI driver` = y |
-| `Component config → FreeRTOS → Kernel` | Tick rate = 1000 Hz（提高时序精度） |
-| `Serial flasher config → Flash size` | 按板子实际（常见 4MB） |
+用 80MHz 时烧录会显示 `SUCCESS`，但串口刷：
 
-> Tick 改成 1000 Hz 是因为 UDS 的 `STmin` 最小是 1ms 量级，默认 100Hz（10ms/tick）精度不够。
+```
+E (26) boot: load partition table error!
+E (25) flash_parts: partition 0 invalid magic number 0xffed
+```
+
+**官方佐证**：乐鑫 ESP-AT 固件包（`ESP32-C3-MINI-1-V2.4.2.0`）的 `download.config` 就是
+`--flash_mode dio --flash_freq 40m --flash_size 4MB`。原厂出货预烧就是这套，不必怀疑。
 
 ### 烧录与监控
 
 ```bash
-idf.py -p /dev/ttyUSB0 flash monitor
+idf.py set-target esp32c3     # 首次
+idf.py build
+idf.py -p /dev/ttyACM0 flash monitor
 ```
 
-ESP32-C3 板子若用**内置 USB-Serial-JTAG**（多数 SuperMini），端口是 `/dev/ttyACM0`，且 IDF 会自动识别。
+⚠️ **本板是 CH343（`1a86:55d3`），端口 `/dev/ttyACM0`，不是 `ttyUSB0`**。
+插上后用 `lsusb | grep 1a86` 确认。
+
+### menuconfig 里要改的三项
+
+| 路径 | 设置 | 理由 |
+|:--|:--|:--|
+| `Component config → ESP-TWAI` | `Enable TWAI driver` = y | 不开启没有 `driver/twai.h` |
+| `Component config → FreeRTOS → Kernel` | Tick rate = **1000 Hz** | UDS 的 `STmin` 最小 1ms，默认 100Hz（10ms/tick）精度不够 |
+| `Serial flasher config` | Mode=DIO / Speed=40MHz / Size=4MB | 见上，不改会启动死循环 |
+
+### 调试通道的时钟必须与 CAN 无关
+
+这条是从裸机实战里总结出来的，对 IDF 版同样适用。
+
+> **调试通道（串口）的时钟源，不要跟着被测对象动。**
+
+裸机版的教训：一开始 UART 挂在 APB 上，后来把 CPU 从 20MHz 切到 160MHz，串口立刻乱码。
+改成 UART 永久挂 **XTAL 40MHz** 后才稳定——无论 CPU 怎么调，波特率不变。
+
+在 IDF 里这个坑被封装掉了，但道理还在：**如果哪天调整了 APB 分频，记得确认控制台波特率没变。**
 
 ---
 
@@ -820,7 +880,7 @@ twai_general_config_t g = TWAI_GENERAL_CONFIG_DEFAULT(
 
 发一帧、收一帧，能收回来就说明：
 
-- ✅ ESP32-C3 的 TWAI 外设正常
+- ✅ ESP32-C3 的 TWAI 外设正常（时钟、位定时、FIFO）
 - ✅ 收发器的 TX/RX 接线正确
 - ✅ 引脚映射没问题
 
@@ -833,6 +893,34 @@ twai_status_info_t st;
 twai_get_status_info(&st);
 assert(st.tx_error_counter == 0);
 ```
+
+#### ⚠️ 但“自环 PASS”不等于“接线正确”
+
+这条是从裸机实战（UART 自环）里学来的，直接适用于 TWAI。
+
+> **自环测试证明的是「外设自己没问题」，不是「物理接线没问题」。**
+
+原因：环回在片内把信号直接短路，**绕过了 GPIO Matrix 和外部引脚**。它能证明：
+
+| 能证明 | 不能证朋 |
+|:--|:--|
+| UART/TWAI 外设本身正常 | 引脚是否真的引到排针 |
+| 时钟、分频、帧格式正确 | 收发器是否真的接对了 |
+| FIFO / 中断通路通 | CANH/CANL 是否接反 |
+
+**所以 TWAI 上不要用环回模式做最终验证**。TWAI 没有像 UART 那样可随手开的 `loopback` 位，
+但它有另一个陷阱：`TWAI_MODE_NO_ACK` 下无人回 ACK，**它自己会忽略 ACK 错误**，
+所以“发成功”不代表线上真的有一帧被别处收到。
+
+**正确的分层验证顺序**：
+
+| 步骤 | 手段 | 能证明什么 |
+|:--:|:--|:--|
+| 1 | `NO_ACK` 自发自收 | 外设、队列、驱动安装顺序正确 |
+| 2 | 接 ZLG 抓包 | **物理层真的通了**（这一步才是真正的接线验证） |
+| 3 | 接 F407 双向交互 | 协议层正确 |
+
+> 📌 换句话说：**第 1 步只能把“外设坏了”这个可能性排除掉，真正的接线验证在第 2 步。**
 
 ### 第 2 步：接 ZLG 抓包（验证物理层）
 
@@ -947,6 +1035,8 @@ void uds_task(void *arg)
 
 ## 十、坑清单
 
+### 10.1 协议层（TWAI / UDS / ISO-TP）
+
 | # | 坑 | 表现 | 解法 |
 |:--:|:--|:--|:--|
 | 1 | 用 5V 收发器（TJA1050/MCP2551） | 完全不通或芯片发热 | 换 SN65HVD230 |
@@ -957,12 +1047,31 @@ void uds_task(void *arg)
 | 6 | 环形队列太小 | 高负载丢帧，`twai_receive` 超时 | `rx_queue_len` ≥ 32 |
 | 7 | `twai_start` 在 `install` 前 | 断言失败重启 | 顺序：install → start |
 | 8 | `P2` 和 `P2*` 单位搞混 | 对端报 50 / 5 而非 50ms / 5000ms | P2 用 ms，P2* 用 10ms |
-| 9 | GPIO 选了 strapping 脚 | 上电偶发不进 boot | 避开 GPIO2/8/9 |
-| 10 | 没实现 S3 超时 | 会话永远不退出 | 加 5 秒计时任务 |
-| 11 | CF 序号从 1 开始但封装成 `0x21` | 对端解析失败 | `0x20 \| (seq & 0x0F)`，seq 从 1 起 |
-| 12 | 首帧长度字段只写低 8 位 | >255 字节的包长度错 | `0x10 \| ((len>>8) & 0x0F)` 且第二字节 `len & 0xFF` |
-| 13 | ISR 里调 `twai_transmit` | 阻塞或崩溃 | 用队列转到任务里发 |
-| 14 | 任务栈太小 | 偶发 panic / Guru Meditation | TWAI 任务栈 ≥ 4096 |
+| 9 | 没实现 S3 超时 | 会话永远不退出 | 加 5 秒计时任务 |
+| 10 | CF 序号从 1 开始但封装成 `0x21` | 对端解析失败 | `0x20 \| (seq & 0x0F)`，seq 从 1 起 |
+| 11 | 首帧长度字段只写低 8 位 | >255 字节的包长度错 | `0x10 \| ((len>>8) & 0x0F)` 且第二字节 `len & 0xFF` |
+| 12 | ISR 里调 `twai_transmit` | 阻塞或崩溃 | 用队列转到任务里发 |
+| 13 | 任务栈太小 | 偶发 panic / Guru Meditation | TWAI 任务栈 ≥ 4096 |
+| 14 | 信 `NO_ACK` 自环 PASS | 以为接线没问题，实际到 ZLG 一测全无 | 环回只验外设，接线靠外部节点验 |
+
+### 10.2 板级（本块 ESP32-C3 实测遇到的）
+
+以下 8 条都来自这块板的具体调试过程，换板子后需重新核。
+
+| # | 坑 | 表现 | 解法 |
+|:--:|:--|:--|:--|
+| 15 | **flash 用默认 80MHz** | 烧录报 `SUCCESS`，串口刷 `partition 0 invalid magic number 0xffed` | `sdkconfig.defaults` 锁 **DIO + 40MHz + 4MB** |
+| 16 | 以为有原生 USB-JTAG | 找不到 `303a:1001`，只有 `1a86:55d3` | 本板是 CH343，**只能 `printf` 不能断点** |
+| 17 | `ttyACM0` / `ttyUSB0` 搞错 | `flash` 报端口不存在 | `lsusb` 看 VID：`1a86:55d3` → `ttyACM0` |
+| 18 | 把 `P18 (PWR)` 当 GPIO 用 | 一拉低就断电重启 | 它是 3.3V 供电使能，**高有效**，悬空即可 |
+| 19 | `GPIO11` 当普通输出 | 输出低后 Flash 掉电 → 死机 | 它是 `VDD_SPI`，永远别碰 |
+| 20 | 引脚位置数反 | 接错引脚，完全无响应 | `P1/P17` 在 **USB 口一端**，`P16/P32` 在另一端 |
+| 21 | `GPIO2/8/9` 做 CAN 引脚 | 上电偶发不进 boot | 避开 strapping，用 `GPIO4/5`（P5/P6） |
+| 22 | 串口桥与 CAN 共用地线接错 | 收发器工作异常，但 USB 还能枚举 | 收发器 `GND` 必须和控制板 `GND` 同一点 |
+
+> 💡 想验证 `GPIO4/5` 到底有没有被别的东西占用，最快的方法是
+> 把它临时配成 UART 输出，串口能出字就说明这脚是干净的。
+> （裸机版的 `ENABLE_PIN_SCAN` 就是干这个的，逐脚扫 GPIO0–10。）
 
 ---
 
@@ -1007,14 +1116,32 @@ idf_component_register(
 
 ```ini
 CONFIG_IDF_TARGET="esp32c3"
+
+# 控制台走 UART0（本板 Type-C 接 CH343 -> UART0 / GPIO20/21）
+# 千万不要写 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y —— 本板没有原生 USB-JTAG
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_UART_NUM=0
+
+# Flash 必锁 DIO + 40MHz（默认 80MHz 会启动死循环）
+CONFIG_ESPTOOLPY_FLASHMODE_DIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_40M=y
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+
+# UDS 时序精度
 CONFIG_FREERTOS_HZ=1000
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
-CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 ```
 
-### 任务划分
+> ⚠️ `CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y` 是多数 C3 例程的默认写法，但**在本板上会导致串口完全静默**——
+> 因为它把日志输出重定向到 `GPIO18/19` 的 USB 外设，而本板这两脚没接到 Type-C。
+
+### 任务划分与引脚定义
 
 ```c
+// 本板实测引脚：GPIO4 = P5（TX→CTX），GPIO5 = P6（RX←CRX）
+#define PIN_CAN_TX  4
+#define PIN_CAN_RX  5
+
 void app_main(void)
 {
     can_init();
@@ -1026,6 +1153,10 @@ void app_main(void)
 
     ESP_LOGI(TAG, "UDS peer ready: REQ=0x%03X RESP=0x%03X", ID_REQ, ID_RESP);
 }
+```
+
+> 任务栈统一 ≥ 2048：TWAI 接收 + printf 格式化比较吃栈，
+> 低于这个值会出现“偶发 panic”（症状是重启后看到 `Guru Meditation` 或 `***ERROR*** A stack overflow`）。
 ```
 
 ### 内存占用估算
@@ -1047,15 +1178,24 @@ void app_main(void)
 ### 硬件
 
 ```
-C3            收发器(SN65HVD230)
-3V3 ───────── VCC
-GND ───────── GND
-GPIO4 ─────── CTX
-GPIO5 ─────── CRX
-              CANH ─┬─ 总线
-              CANL ─┴─ 总线
-              Rs ──── GND
+C3 (本板位号)          收发器(SN65HVD230)
+3V3 (P7/P15/P20) ──── VCC
+GND (P1/P8/P16/…) ─── GND
+GPIO4  (P5) ───────── CTX
+GPIO5  (P6) ───────── CRX
+                       CANH ─┬─ 总线
+                       CANL ─┴─ 总线
+                       Rs ──── GND
 ```
+
+### 本板烧录速查
+
+| 项 | 值 |
+|:--|:--|
+| 端口 | `/dev/ttyACM0`（CH343 `1a86:55d3`） |
+| Flash | **DIO + 40MHz + 4MB**（不锁会启动死循环） |
+| 控制台 | UART0（`GPIO20/21`），**不是** USB-Serial-JTAG |
+| 不能碰的脚 | `GPIO11`(P9) `GPIO12`(P29) `GPIO13`(P23) `P18`(PWR) |
 
 ### 标准 ID
 
@@ -1103,5 +1243,7 @@ GPIO5 ─────── CRX
 | 芯片手册 | ESP32-C3 Technical Reference Manual（第 28 章 TWAI） |
 | 驱动 API | ESP-IDF `driver/twai.h` |
 | 诊断协议 | ISO 14229-1（UDS）· ISO 15765-2（ISO-TP）· ISO 15765-4（CAN 诊断） |
-| 配套文档 | 本库《ZLG CAN 库与 UDS 刷写详解》 |
-| CAN 基础 | 本库《ZLG CAN 库与 UDS 刷写详解》第二至四章 |
+| CAN 基础 | [[knowledge/embedded/03-ZLG-CAN库与UDS刷写详解\|ZLG CAN 库与 UDS 刷写详解]] 第二至四章 |
+| ISO-TP 参考实现 | 同文档第七章「用 ZLG 盒子做 UDS 刷写」的分包/拆包代码 |
+| **本板硬件实测** | [[knowledge/embedded/08-ESP32C3烧录与裸机固件实战\|08 烧录与裸机固件实战]]（引脚表、flash 40MHz DIO、CH343） |
+| 裸机方法论 | [[knowledge/embedded/02-裸机编程指南\|裸机编程指南（cpq）]] |

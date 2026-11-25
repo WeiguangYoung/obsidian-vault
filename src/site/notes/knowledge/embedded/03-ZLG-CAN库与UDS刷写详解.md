@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/embedded/06-ZLG-CAN库与UDS刷写详解/","title":"ZLG CAN 库与 UDS 刷写详解","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式"],"dg-note-properties":{"title":"ZLG CAN 库与 UDS 刷写详解","date":"2026-11-24","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/03-ZLG-CAN库与UDS刷写详解/","title":"ZLG CAN 库与 UDS 刷写详解","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式"],"dg-note-properties":{"title":"ZLG CAN 库与 UDS 刷写详解","date":"2026-11-24","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式"]}}
 ---
 
 
