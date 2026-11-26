@@ -51,10 +51,10 @@
 
 | 想深入 | 去看 |
 |:--|:--|
-| 编译 / 链接 / 装载的完整链路 | [[knowledge/embedded/01-编译链接装载与库\|编译、链接、装载与库]] |
+| 编译 / 链接 / 装载的完整链路 | [[knowledge/embedded/02-编译链接装载与库\|编译、链接、装载与库]] |
 | CMake 怎么组织这些代码 | [[knowledge/devops/practices/05-构建系统实战-CMake\|CMake 工程实战]] |
-| 链接脚本与启动代码 | [[knowledge/embedded/02-裸机编程指南\|裸机编程指南]] |
-| CAN + UDS 协议实现 | [[knowledge/embedded/03-ZLG-CAN库与UDS刷写详解\|ZLG CAN 库与 UDS 刷写详解]] |
+| 链接脚本与启动代码 | [[knowledge/embedded/01-裸机编程指南\|裸机编程指南]] |
+| CAN + UDS 协议实现 | [[knowledge/embedded/04-ZLG-CAN库与UDS刷写详解\|ZLG CAN 库与 UDS 刷写详解]] |
 
 ---
 
