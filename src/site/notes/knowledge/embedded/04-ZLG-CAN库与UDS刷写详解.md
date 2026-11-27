@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/knowledge/embedded/04-ZLG-CAN库与UDS刷写详解/","title":"ZLG CAN 库与 UDS 刷写详解","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式"],"dg-note-properties":{"title":"ZLG CAN 库与 UDS 刷写详解","date":"2026-11-24","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式"]}}
+{"dg-publish":true,"permalink":"/knowledge/embedded/04-ZLG-CAN库与UDS刷写详解/","title":"ZLG CAN 库与 UDS 刷写详解","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式","兼容卡","创芯科技","canalystii","python-can"],"dg-note-properties":{"title":"ZLG CAN 库与 UDS 刷写详解","date":"2026-11-24","tags":["CAN","CANFD","ZLG","周立功","USB-CAN","ControlCAN","zlgcan","接口库","二次开发","UDS","ISO-TP","ISO15765","刷写","Bootloader","嵌入式","兼容卡","创芯科技","canalystii","python-can"]}}
 ---
 
 
@@ -19,11 +19,13 @@
 | 一、先分清两代库 | `VCI_*` vs `ZCAN_*` 该用哪个 |
 | 二、ControlCAN 核心接口 | 老库函数 / 结构体 / 波特率表 |
 | 三、zlgcan 核心接口 | 新库函数 / 帧结构 / FD 标志位 |
-| 四、标准调用流程 | 打开 → 初始化 → 启动 → 收发 → 关闭 |
-| 五、Python 侧接入 | `python-can` 的 zlgcan backend |
-| 六、常见坑 | 十条实战经验 |
-| 七、UDS 刷写实现 | ISO-TP 分包 + 刷写时序 + 核心代码 |
-| 八、一页速查 | 表格总结 |
+| 四、非 ZLG 兼容卡 | 创芯科技 USBCAN-2A 这类卡能不能用、怎么接 |
+| 五、经典 CAN 与 CAN FD | 你的 ECU 决定用哪个，FD 代码怎么降级 |
+| 六、标准调用流程 | 打开 → 初始化 → 启动 → 收发 → 关闭 |
+| 七、Python 侧接入 | `python-can` 的 zlgcan / canalystii backend |
+| 八、常见坑 | 十条实战经验 |
+| 九、UDS 刷写实现 | ISO-TP 分包 + 刷写时序 + 核心代码 |
+| 十、一页速查 | 表格总结 |
 
 ---
 
@@ -40,7 +42,9 @@
 | 多设备/多通道 | 索引易混 | 句柄化，清晰 |
 | 动态库 | `ControlCAN.dll` / `libcontrolcan.so` | `zlgcan.dll` / `libzlgcan.so` |
 
-**结论**：只要不是维护十几年前的老代码，**一律用 zlgcan**。你手上的 USBCAN-II / USBCANFD-200U 等新设备，官方给的都是 zlgcan 示例。
+**结论**：只要是**ZLG 原厂设备**，又不是维护十几年前的老代码，**一律用 zlgcan**。USBCAN-II / USBCANFD-200U 等新设备，官方给的都是 zlgcan 示例。
+
+> ⚠️ 但如果你手上是**非 ZLG 的兼容卡**（创芯科技 USBCAN-2A、吉阳等），这条结论要反过来——它们只兼容老库的 `VCI_*` 接口，`libzlgcan` 根本认不出这种设备。详见第四章。
 
 设备类型宏（`ZCANDeviceType`）常用的几个：
 
@@ -256,7 +260,175 @@ typedef struct {
 
 ---
 
-## 四、标准调用流程
+## 四、非 ZLG 兼容卡能不能用
+
+市面上大量国产 USB-CAN 盒子写着「兼容 ZLG」，价格只有原厂的 1/3。典型代表是**创芯科技（Chuangxin）的 USBCAN-2A / CANalyst-II**、吉阳等。
+
+关键是要先分清「兼容」到底兼容哪一层：
+
+| 兼容层次 | 含义 | 实际影响 |
+|:--|:--|:--|
+| **API 兼容** | 厂商提供同名的 `ControlCAN.h` + `libcontrolcan.so` / `ControlCAN.dll`，函数签名和 `VCI_CAN_OBJ` 结构体一致 | 源码不用改，重新编译即可 |
+| **设备兼容** | ZLG 的 `libzlgcan.so` 能直接认这块卡 | **基本不存在**，`ZCAN_OpenDevice` 返回 0 |
+
+所以「兼容 ZLG」几乎总是指**第一层**：它模仿的是老库 `VCI_*` 的接口，不是新库 `ZCAN_*`，更不是 ZLG 的 USB 协议。
+
+### 4.1 一张判定表：本文各章对兼容卡是否适用
+
+以 USBCAN-2A（CAN 2.0，双通道）为例：
+
+| 章节 | 能否直接用 | 原因 |
+|:--|:--:|:--|
+| 一、两代库之分 | ⚠️ 反着读 | 兼容卡只能用**老库** |
+| 二、ControlCAN 接口 | ✅ | 正是兼容卡的接口 |
+| 三、zlgcan 接口 | ❌ | `libzlgcan` 认不出非 ZLG 设备 |
+| 五、经典 CAN 与 CAN FD | ✅ | 兼容卡全是 CAN 2.0 |
+| 六、标准调用流程 | ✅ | 用 ControlCAN 那半边骨架 |
+| 七、Python 侧接入 | ⚠️ 换后端 | 不能用 `zlgcan` backend，见 4.4 |
+| 八、常见坑 | ✅ | 十条全适用 |
+| 九、UDS 刷写 | ⚠️ 改代码 | 协议层通用，但给的代码是 FD 版，见第五章 |
+| 十、一页速查 | ✅ | 只看 ControlCAN 那一列 |
+
+一句话：**能用，但只覆盖本文的一半，而且刷写代码要降级到经典 CAN。**
+
+### 4.2 路线 A：继续用 ControlCAN（C 代码复用）
+
+如果你已经有一份基于 `VCI_*` 的代码，换卡后基本零改动，只需三件事：
+
+**① 确认 `DeviceType` 的值**
+
+ZLG 原厂的宏是 `VCI_USBCAN1 = 3`、`VCI_USBCAN2 = 4`。兼容卡厂商可能改成自己的值（常见做法是照抄 3 / 4，但不保证）。
+
+这个值**不要猜**，看随卡提供的 demo 源码里 `VCI_OpenDevice` 的第一个参数，或厂商 PDF 手册的设备类型表。
+
+**② 波特率用 2.4 节的 Timings 表**
+
+兼容卡内部同样是 SJA1000 风格的 BTR0/BTR1 寄存器，所以本文 2.4 节的表和它通用：
+
+| 波特率 | Timing0 | Timing1 |
+|:--|:--|:--|
+| 250 kbps | `0x01` | `0x1C` |
+| 500 kbps | `0x00` | `0x1C` |
+
+**③ 先确认厂商给不给 Linux 库**
+
+这是最大的现实风险：很多国产兼容卡**只提供 Windows 的 DLL**，Linux 的 `.so` 要么没有，要么只在某些型号上提供。收货后先打开安装包看一眼有没有 `libcontrolcan.so`，没有就只能走 4.3。
+
+### 4.3 路线 B：python-can 的 canalystii 后端（推荐）
+
+`python-can` 有一个**专门给创芯科技设备**的后端，不依赖厂商 DLL，是纯 Python + `pyusb` 实现（早期靠逆向，现在由 python-can 官方维护）：
+
+```bash
+pip install "python-can[canalystii]"
+```
+
+Windows 上还需要用 [Zadig](https://zadig.akeo.ie/) 把设备的 USB 驱动换成 `libusb-win32`；Linux 上装好 `libusb` 即可，但要注意 udev 权限。
+
+用法和普通 `can.Bus` 一样：
+
+```python
+import can
+
+bus = can.Bus(interface="canalystii", channel=0, bitrate=500000)
+
+# 发一帧 UDS 请求：10 03（进入扩展会话）
+bus.send(can.Message(arbitration_id=0x18DA10F1, is_extended_id=True,
+                     data=[0x02, 0x10, 0x03]))
+
+msg = bus.recv(timeout=1.0)
+print(hex(msg.arbitration_id), msg.data.hex())
+
+bus.shutdown()
+```
+
+这条路线的好处很实际：
+
+- **跨平台一致**：Windows / Linux / macOS 都能跑，不用管厂商给不给 `.so`
+- **不用处理 32/64 位库不匹配**（纯 Python，没有二进制依赖）
+- **和本文第九章的 UDS 逻辑天然对接**，因为 `python-can` 的 `Message` 已经把扩展帧、远程帧抽象好了
+
+### 4.4 canalystii 后端的已知限制
+
+以下几条来自 python-can 官方文档和 `canalystii` 包源码，用之前必须知道：
+
+| 限制 | 说明 | 应对 |
+|:--|:--|:--|
+| **不支持 CAN FD** | 后端强制 `CAN_20`，传 `BitTimingFd` 会被拒 | 兼容卡本来也只有 2.0，无影响 |
+| **双通道时间戳可能乱序** | 通道 0 和 1 的帧在软件层返回顺序不确定（各自通道内部有序） | 需要跨通道比对时**按 timestamp 排序** |
+| **时间戳单位是 100 µs** | 硬件给的是 0.1 ms 计数 | 拿来算时延前先乘 `100e-6` |
+| **只认特定 VID/PID** | `0x04d8:0x0053`（Microchip 的 VID，卡上用的是 PIC32） | 设备管理器里核对，不符则后端找不到设备 |
+| **波特率只支持表内值** | 5k / 10k / 20k / 50k / 100k / 125k / 250k / 500k / 800k / 1M 等 | 非标准波特率要传 `timing0/timing1` 原始值 |
+
+> 若你的卡 VID/PID 不是 `04d8:0053`（有些兼容卡换了芯片），canalystii 后端就认不出来，只能回到 4.2 的 ControlCAN 路线。
+
+**一个小技巧**：不确定卡是哪种协议时，先用 `lsusb` 看一眼 VID/PID，再决定走哪条路，比装完驱动再试要快。
+
+### 4.5 收货后的验收清单
+
+1. `lsusb` 看 VID/PID → 决定走 canalystii 还是 ControlCAN
+2. 安装包里找 `libcontrolcan.so`（Linux）→ 有就走路线 A，没有就只能走 B
+3. demo 源码里找 `VCI_OpenDevice` 的第一个参数 → 那就是 `DeviceType` 的正确值
+4. 单通道自发自收（`Mode = 2`）能收到自己的帧 → 驱动通了
+5. 双机对连收得到 → 再查终端电阻（见第八章第 3 条）
+
+---
+
+## 五、经典 CAN 与 CAN FD：先看 ECU 支持哪个
+
+本文第九章的刷写代码是**按 CAN FD 写的**（单帧最多 62 字节、`ZCAN_TransmitFD`、`CANFD_FDF` 标志位）。如果你的盒子、或者你的 ECU 只支持经典 CAN，这套代码不能直接跑。
+
+### 5.1 谁决定用不用 FD
+
+顺序是**从 ECU 往回推**，不是从盒子往前推：
+
+| 环节 | 不支持 FD 的后果 |
+|:--|:--|
+| **ECU 的 CAN 控制器** | 收到 FD 帧会报错帧，直接通信失败 |
+| **收发器** | 需要支持 FD 的型号（如 TJA1042→TJA1044、TJA1051→TJA1057） |
+| **USB-CAN 盒子** | 只能发 2.0，`DataLen > 8` 被截断 |
+| **MCU 的 CAN 外设** | 例如 STM32F407 的 bxCAN **只有 2.0B，没有 FD** |
+
+注意最后一条：**F407 做 Bootloader 时，天然就是经典 CAN 场景**。用 FD 盒子反而是浪费，配一张 2.0 兼容卡刚好。
+
+### 5.2 ISO-TP 边界数字对照
+
+这是降级时唯一必须改对的东西。同样是 8 字节一帧 vs 64 字节一帧，PCI 之后的可用数据差很多：
+
+| 项 | 经典 CAN（8 字节） | CAN FD（64 字节） |
+|:--|:--:|:--:|
+| 单帧 SF 最大数据 | **7** | 62 |
+| 首帧 FF 携带数据 | **6** | 62 |
+| 连续帧 CF 携带数据 | **7** | 63 |
+| SF 长度编码 | `0L`（低 4 位） | ≤7 用 `0L`，>7 用 `00 LL` |
+| CF 序号范围 | 0~15 | 0~15（相同） |
+
+> 记住一组数字：**7 / 6 / 7**（经典）和 **62 / 62 / 63**（FD）。第九章代码里 `62`、`63`、`64` 这三个魔数就是从这里来的。
+
+### 5.3 第九章代码要改的四处
+
+| 位置 | FD 写法 | 经典 CAN 改成 |
+|:--|:--|:--|
+| `can_send_raw()` | `ZCAN_TransmitFD_Data` + `CANFD_FDF` | `VCI_CAN_OBJ` + `VCI_Transmit` |
+| `isotp_send()` 单帧分支 | `len <= 62`，含 `00 LL` 长 SF 分支 | `len <= 7`，**删掉**长 SF 分支 |
+| `isotp_send()` 首帧/连续帧 | 首帧带 62，CF 带 63 | 首帧带 6，CF 带 7 |
+| `isotp_recv()` | 缓冲区 64 字节 | 缓冲区 8 字节，`expect > 6` / `> 7` |
+
+改完之后，`buf` 数组从 `BYTE buf[64]` 缩到 `BYTE buf[8]`，其余逻辑（PCI 判断、序号回绕、流控帧）完全不动。
+
+**别忘了一处细节**：经典 CAN 的单帧必须显式把剩余字节补 0 或按实际长度发。ZLG 老库的 `VCI_CAN_OBJ.DataLen` 是"有效字节数"，硬件只发前 `DataLen` 个；但有些 ECU 会按固定 8 字节解析，这时要把 `DataLen` 填 8。
+
+### 5.4 速度差多少
+
+| 场景 | 1 MB 固件耗时 |
+|:--|:--|
+| 经典 CAN @ 500 kbps | **3~5 分钟** |
+| CAN FD @ 500 kbps / 2 Mbps（开 BRS） | **30 秒内** |
+
+差 6~10 倍。做台架验证、一天刷十几次的时候，这个差距很明显；但如果你的 ECU 本来只有 bxCAN，就没得选——**协议上限由 ECU 决定，不是盒子**。
+
+---
+
+## 六、标准调用流程
 
 不管是哪代库，顺序都是固定的，**乱序必失败**：
 
@@ -313,7 +485,7 @@ ZCAN_CloseDevice(dev);
 
 ---
 
-## 五、Python 侧接入
+## 七、Python 侧接入
 
 不想写 C 的话，最省事的是 `python-can` 的官方 `zlgcan` 接口（底层是 Rust 封装的 `zlgcan-driver`）：
 
@@ -352,7 +524,7 @@ bus.shutdown()
 
 ---
 
-## 六、常见坑
+## 八、常见坑
 
 1. **用 ControlCAN 驱动 CAN FD 设备** → 只能跑 2.0，`DataLen > 8` 直接被截断。FD 必须换 `zlgcan`。
 2. **返回值判断反了** → ZLG 全系 `1 = 成功`、`0 = 失败`，不是 0 成功。
@@ -367,11 +539,13 @@ bus.shutdown()
 
 ---
 
-## 七、用 ZLG 盒子做 UDS 刷写：核心实现
+## 九、用 ZLG 盒子做 UDS 刷写：核心实现
 
 > 这一节是基于上面 zlgcan 接口的**实战落地**：用周立功 USB-CANFD 盒子当"诊断口"，通过 ISO 15765-2（CAN 上的分包传输，俗称 ISO-TP）+ ISO 14229（UDS 应用层）给 ECU 刷程序。只给核心代码骨架，不做全量封装。
+>
+> ⚠️ **下面 9.4–9.6 的代码是 CAN FD 版**（单帧 62 字节、`ZCAN_TransmitFD`）。用经典 CAN 盒子和只支持 2.0 的 ECU（比如 STM32F407 的 bxCAN）时，必须先按**第五章**改成 7/6/7 的边界数字和 `VCI_CAN_OBJ` 收发。协议逻辑本身完全不变，改的只是边界和收发函数。
 
-### 7.1 协议栈分层
+### 9.1 协议栈分层
 
 ```
   应用层    UDS (ISO 14229)      0x10 会话 / 0x27 解锁 / 0x34-0x37 刷写
@@ -397,7 +571,7 @@ bus.shutdown()
 11. 复位             0x11 0x01
 ```
 
-### 7.2 ISO-TP 帧格式
+### 9.2 ISO-TP 帧格式
 
 标准寻址（11 位 ID）每帧 8 字节，首字节是 PCI：
 
@@ -410,7 +584,7 @@ bus.shutdown()
 
 CAN FD 的 SF 用 PCI 低 4 位 + 第二字节组合表示长度（`00 LL`），最大 62 字节数据，其余规则相同。
 
-### 7.3 UDS 服务码速查
+### 9.3 UDS 服务码速查
 
 | 服务 | SID | 常用子功能 |
 |:--|:--|:--|
@@ -423,11 +597,11 @@ CAN FD 的 SF 用 PCI 低 4 位 + 第二字节组合表示长度（`00 LL`），
 | 请求下载 | `0x34` | 数据格式 + 地址 + 长度 |
 | 传输数据 | `0x36` | 块序号 + 数据 |
 | 退出传输 | `0x37` | — |
-| 否定响应 | `0x7F` | 见 7.7 NRC 表 |
+| 否定响应 | `0x7F` | 见 9.7 NRC 表 |
 
 **肯定响应 = SID + 0x40**（`0x10` → `0x50`，`0x34` → `0x74`）。
 
-### 7.4 核心代码：ISO-TP 发送（多帧分包）
+### 9.4 核心代码：ISO-TP 发送（多帧分包）
 
 ```c
 /* ---------- 常量 ---------- */
@@ -493,7 +667,7 @@ int isotp_send(const BYTE *data, UINT len)
 
 > 经典 CAN（8 字节）版本：SF 最大 7 字节、FF 后 6 字节、CF 每帧 7 字节，改一下边界数字即可。
 
-### 7.5 核心代码：ISO-TP 接收（拆包）
+### 9.5 核心代码：ISO-TP 接收（拆包）
 
 ```c
 /* 收一条完整 UDS 响应，超时 timeout_ms */
@@ -546,7 +720,7 @@ int isotp_recv(BYTE *out, UINT *out_len, int timeout_ms)
 }
 ```
 
-### 7.6 核心代码：刷写主流程
+### 9.6 核心代码：刷写主流程
 
 ```c
 /* 发一条 UDS 请求并等肯定响应；返回 0 成功 */
@@ -635,7 +809,7 @@ fail:
 }
 ```
 
-### 7.7 NRC 否定响应码
+### 9.7 NRC 否定响应码
 
 | NRC | 含义 | 常见原因 |
 |:--|:--|:--|
@@ -655,7 +829,7 @@ fail:
 
 > `0x78` 要特别注意：ECU 擦 Flash 时常返回 `7F 31 78`，表示"收到，等我"。此时**必须继续等**下一个响应（典型 P2* 超时 5 s），不能当失败重发。
 
-### 7.8 几个必须知道的坑
+### 9.8 几个必须知道的坑
 
 1. **`0x36` 的序号和 ISO-TP 的 CF 序号是两套**。`0x36` 的 blockSequenceCounter 是 **0x00~0xFF**，到 FF 回 00；ISO-TP 的 CF 序号是 **0~15**，到 15 回 0。两个独立，别混淆。
 2. **CAN FD 刷写快很多**。经典 CAN 500 kbps 刷 1 MB 约 3~5 分钟；CAN FD 500 k/2 M 能压到 30 秒内。如果 ECU 支持 FD，一定开 **BRS**。
@@ -670,7 +844,7 @@ fail:
 
 ---
 
-## 八、一页速查
+## 十、一页速查
 
 | 阶段 | ControlCAN | zlgcan |
 |:--|:--|:--|
@@ -683,3 +857,14 @@ fail:
 | 成功判定 | `== STATUS_OK (1)` | `== 1` |
 
 > 记住一句话：**句柄化的是新库，三元组的是老库；FD 只在新库；成功都是 1。**
+
+### 10.1 三条路的选型
+
+| 你的设备 | 走哪条路 | 参考章节 |
+|:--|:--|:--|
+| ZLG 原厂 + 要 CAN FD | `zlgcan`（`ZCAN_*`） | 三、六、九 |
+| ZLG 原厂 USB-CAN II 等老设备 | `ControlCAN`（`VCI_*`） | 二、六 |
+| 创芯科技 / 吉阳等兼容卡 | `ControlCAN` 或 python-can `canalystii` 后端 | 四 |
+| 只支持 CAN 2.0 的 ECU（如 F407 bxCAN） | 任选盒子，代码按经典 CAN 改 | 五 |
+
+> 最后提醒：**协议上限由 ECU 决定，不由盒子决定**。ECU 只有 bxCAN 时，买 FD 盒子也不会更快；反过来，盒子只支持 2.0 时，ECU 再强也只能按 3~5 分钟刷 1 MB 的速度走。
